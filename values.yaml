@@ -21,5 +21,6 @@ secret:
   botToken: __TELEGRAM_TOKEN__
 
 configmap:
+  name: stationbot
   state:
     name: stationstate
