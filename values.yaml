@@ -1,0 +1,25 @@
+namespace: timhatdiehandandermaus
+
+deployment:
+  name: stationbot
+  image: ghcr.io/preparingforexams/station-bot:__TAG__
+  imagePullPolicy: IfNotPresent
+  revisionHistoryLimit: 1
+  replicas: 1
+  labels:
+    app: stationbot
+  requests:
+    cpu: 50m
+    memory: 50Mi
+  limits:
+    cpu: 300m
+    memory: 300Mi
+  updateStrategy: Recreate
+
+secret:
+  name: station-bot
+  botToken: __TELEGRAM_TOKEN__
+
+configmap:
+  state:
+    name: stationstate

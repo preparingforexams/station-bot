@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "randomfunctionbot"
+version = "0.1.0"
+description = "replies with a random action to commands (non-deterministic)"
+authors = ["BlindfoldedSurgery <team@blindfolded.surgery>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+python-telegram-bot = "^20.0"
+requests = "^2.28.1"
+geonamescache = "^2.0.0"
+cinemagoer = "^2023.0.0"
+beautifulsoup4 = "^4.12.2"
+kubernetes = "^27.2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 110

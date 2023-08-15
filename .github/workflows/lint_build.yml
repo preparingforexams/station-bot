@@ -1,0 +1,27 @@
+name: Build image
+
+on:
+  push:
+    branches:
+      - '!main'
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: sed -i -e "s#__TAG__#${GITHUB_SHA}#g" values.yaml
+      - uses: BlindfoldedSurgery/github-action-helm@v0.3.0
+        with:
+          raw_command: lint
+      - uses: BlindfoldedSurgery/github-action-helm@v0.3.0
+        with:
+          raw_command: lint --strict
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build the tagged Docker image
+        run: docker build -t ghcr.io/preparingforexams/station-bot:${GITHUB_SHA} .

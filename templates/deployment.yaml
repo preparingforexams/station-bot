@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.deployment.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  revisionHistoryLimit: {{ .Values.deployment.revisionHistoryLimit }}
+  replicas: {{ .Values.deployment.replicas }}
+  strategy:
+    type: {{ .Values.deployment.updateStrategy }}
+  selector:
+    matchLabels:
+      {{- range $k, $v := .Values.deployment.labels }}
+      {{ $k }}: {{ $v }}
+      {{- end }}
+  template:
+    metadata:
+      labels:
+        {{- range $k, $v := .Values.deployment.labels }}
+        {{ $k }}: {{ $v }}
+        {{- end }}
+    spec:
+      containers:
+        - name: {{ .Values.deployment.name }}
+          image: {{ .Values.deployment.image }}
+          imagePullPolicy: {{ .Values.deployment.imagePullPolicy }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.secret.name }}
+          resources:
+            requests:
+              cpu: {{ .Values.deployment.requests.cpu }}
+              memory: {{ .Values.deployment.requests.memory }}
+            limits:
+              cpu: {{ .Values.deployment.limits.cpu }}
+              memory: {{ .Values.deployment.limits.memory }}

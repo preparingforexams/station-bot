@@ -1,0 +1,8 @@
+.venv/
+venv/
+.idea/
+*.iml
+
+bot/*/__pycache__
+bot/__pycache__
+test_api_ninjas.py
