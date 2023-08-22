@@ -15,4 +15,5 @@ RUN poetry install --only main
 COPY bot/ bot/
 COPY main.py main.py
 
+ENV PYTHONUNBUFFERED=1
 ENTRYPOINT [ "python", "main.py" ]
