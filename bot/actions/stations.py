@@ -151,7 +151,7 @@ def get_link(t: Tag) -> str:
 
 
 def normalize_column_strings(columns: list[Tag], unicode_form: str = "NFKD") -> list[str]:
-    return [unicodedata.normalize(unicode_form, " ".join(column.strings)) for column in columns]
+    return [unicodedata.normalize(unicode_form, " ".join(column.strings)).strip() for column in columns]
 
 
 def get_stations() -> Optional[list[Station]]:
