@@ -7,27 +7,25 @@ import kubernetes.client
 from kubernetes import client
 from kubernetes.client import V1ConfigMap
 
-from . import Station
+from bot import Station
 
 
 class State:
     def __init__(self, initial_state: dict[str, Any]):
         self.state = initial_state
-        self.bot = None
-        self.changed = True
+        self.last_value = None
 
     def initialize(self):
-        self.state.update(self.read())
+        self.state.update(self.read(update_global_state=False))
         self.write()
 
-    def read(self) -> dict[str, Any]:
+    def read(self, update_global_state: bool = True) -> dict[str, Any]:
         raise NotImplemented
 
     def write(self):
         raise NotImplemented
 
     def set(self, key: str, value: Any):
-        self.changed = True
         self.state[key] = value
 
     def get(self, item: str, default=None):
@@ -38,6 +36,9 @@ class State:
 
     def __setitem__(self, key: str, value: Any):
         self.set(key, value)
+
+    def items(self):
+        return self.state.items()
 
 
 class ConfigmapState(State):
@@ -69,33 +70,41 @@ class ConfigmapState(State):
                 ),
                 data={}
             )
-            self.api.create_namespaced_config_map(self.namespace, configmap)
+            self.configmap = self.api.create_namespaced_config_map(self.namespace, configmap)
+            self.configmap.data = self.state
 
         super().initialize()
 
-    def read(self) -> dict[str, Any]:
+    def read(self, update_global_state: bool = True) -> dict[str, Any]:
         self.configmap = self.api.read_namespaced_config_map(self.name, self.namespace)
-        if self.configmap.data is None and not self.state:
-            state = {}
-        else:
-            state = json.loads(base64.b64decode(self.configmap.data["state"]).decode("utf-8"))
-            state["stations"] = [Station.serialize(station) for station in state.get("stations", [])]
 
+        if not self.configmap.data:
+            self.configmap.data = {"state": base64.b64encode('{"stations": []}'.encode('utf-8'))}
+
+        decoded_value = base64.b64decode(self.configmap.data["state"]).decode("utf-8")
+        state = json.loads(decoded_value)
+        state["stations"] = {station["id"]: Station.deserialize(station) for station in state.get("stations", [])}
+
+        if update_global_state:
+            self.state = state
         return state
 
-    def write(self):
-        if not self.changed:
-            return
+    def changed(self, value):
+        return self.last_value != value
 
+    def write(self):
         state = self.state.copy()
-        state["stations"]: list[Station] = [station.deserialize() for station in state["stations"]]
+        state["stations"]: list[dict] = [sstation.serialize() for sstation in state["stations"].values()]
         value = json.dumps(state).encode("utf-8")
         value = base64.b64encode(value).decode("utf-8")
+        if not self.changed(value):
+            return
+
         if not self.configmap.data:
             self.configmap.data = {}
-        self.configmap.data["state"] = value
+        self.configmap.data = {"state": value}
 
         self.api.patch_namespaced_config_map(self.name, self.namespace, self.configmap)
         # otherwise we're getting a 409 from the k8s api due to the version difference
-        self.read()
-        self.changed = False
+        self.read(False)
+        self.last_value = value
