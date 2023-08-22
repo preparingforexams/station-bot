@@ -102,19 +102,19 @@ Done: {self.done}"""
 
     def serialize(self):
         return {
-            "name": self.name,
-            "name_link": self.name_link,
+            "name": self.name.strip(),
+            "name_link": self.name_link.strip(),
             "type": str(self.type),
             "tracks": self.tracks,
-            "town": self.town,
-            "town_link": self.town_link,
-            "district": self.district,
-            "opening": self.opening,
-            "transport_association": self.transport_association,
-            "category": self.category,
+            "town": self.town.strip(),
+            "town_link": self.town_link.strip(),
+            "district": self.district.strip(),
+            "opening": self.opening.strip(),
+            "transport_association": self.transport_association.strip(),
+            "category": self.category.strip(),
             "stop_type": str(self.stop_type),
-            "routes": self.routes,
-            "notes": self.notes,
+            "routes": self.routes.strip(),
+            "notes": self.notes.strip(),
             "done": self.done
         }
 
