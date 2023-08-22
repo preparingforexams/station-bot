@@ -1,7 +1,7 @@
 import logging
 
 
-def create_logger(name: str, level: int = logging.INFO) -> logging.Logger:
+def create_logger(name: str, level: int = logging.DEBUG) -> logging.Logger:
     import sys
 
     logger = logging.Logger(name)
