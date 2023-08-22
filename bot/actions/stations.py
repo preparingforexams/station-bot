@@ -1,7 +1,6 @@
 import dataclasses
 import unicodedata
 from enum import Enum
-from functools import lru_cache
 from typing import Optional, Self
 
 import requests
@@ -154,6 +153,16 @@ def normalize_column_strings(columns: list[Tag], unicode_form: str = "NFC") -> l
     return [unicodedata.normalize(unicode_form, " ".join(column.strings)).strip() for column in columns]
 
 
+def get_station_name(t: Tag) -> str:
+    link_tags = t.find_all("a")
+    if not link_tags:
+        strings = list(t.strings)
+    else:
+        strings = [a.text for a in link_tags]
+
+    return "".join(strings)
+
+
 def get_stations() -> Optional[list[Station]]:
     response = requests.get(
         "https://de.wikipedia.org/wiki/Liste_der_Personenbahnh%C3%B6fe_in_Schleswig-Holstein"
@@ -174,7 +183,7 @@ def get_stations() -> Optional[list[Station]]:
         tracks = int(column_strings[2]) if column_strings[2] else None
 
         station = Station(
-            name=column_strings[0],
+            name=get_station_name(columns[0]),
             name_link=get_link(columns[0]),
             type=StationType.from_str(column_strings[1]),
             tracks=tracks,
