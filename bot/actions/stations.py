@@ -150,7 +150,7 @@ def get_link(t: Tag) -> str:
     return actions.escape_markdown(link)
 
 
-def normalize_column_strings(columns: list[Tag], unicode_form: str = "NFKD") -> list[str]:
+def normalize_column_strings(columns: list[Tag], unicode_form: str = "NFC") -> list[str]:
     return [unicodedata.normalize(unicode_form, " ".join(column.strings)).strip() for column in columns]
 
 
