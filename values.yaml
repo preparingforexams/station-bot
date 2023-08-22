@@ -15,6 +15,7 @@ deployment:
     cpu: 300m
     memory: 300Mi
   updateStrategy: Recreate
+  serviceAccountName: stationbot
 
 secret:
   name: station-bot
