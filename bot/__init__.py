@@ -35,7 +35,9 @@ def send_telegram_error_message(message: str, *, _: Update = None):
 async def station(update: Update, _: ContextTypes.DEFAULT_TYPE):
     log = create_logger(inspect.currentframe().f_code.co_name)
 
+    log.debug(f"{len(_state['stations'])} are registered")
     open_stations = [_station for _station in _state["stations"] if _station.done]
+    log.debug(f"{len(open_stations)} are available to choose from")
     # noinspection PyShadowingNames
     station = random.choice(open_stations)
     log.debug(f"{station.name}")
