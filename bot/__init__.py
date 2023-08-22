@@ -15,12 +15,15 @@ from .state import ConfigmapState
 try:
     config.load_incluster_config()
 except config.config_exception.ConfigException:
-    config.load_kube_config(config_file="/home/torben/.kube/rke2-admin-config")
+    config.load_kube_config()
 
 kubernetes_api_client = client.CoreV1Api()
 
-_state = ConfigmapState(kubernetes_api_client, {"stations": get_stations()})
+_state = ConfigmapState(kubernetes_api_client, {})
 _state.initialize()
+if not _state["stations"]:
+    _state["stations"] = get_stations()
+    _state.write()
 
 
 def send_telegram_error_message(message: str, *, _: Update = None):

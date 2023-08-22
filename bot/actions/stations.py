@@ -100,23 +100,22 @@ Strecke: {self.routes}
 Anmerkungen: {actions.escape_markdown(self.notes)}
 Done: {self.done}"""
 
-    @classmethod
-    def serialize(cls):
+    def serialize(self):
         return {
-            "name": cls.name,
-            "name_link": cls.name_link,
-            "type": str(cls.type),
-            "tracks": cls.tracks,
-            "town": cls.town,
-            "town_link": cls.town_link,
-            "district": cls.district,
-            "opening": cls.opening,
-            "transport_association": cls.transport_association,
-            "category": cls.category,
-            "stop_type": str(cls.stop_type),
-            "routes": cls.routes,
-            "notes": cls.notes,
-            "done": cls.done
+            "name": self.name,
+            "name_link": self.name_link,
+            "type": str(self.type),
+            "tracks": self.tracks,
+            "town": self.town,
+            "town_link": self.town_link,
+            "district": self.district,
+            "opening": self.opening,
+            "transport_association": self.transport_association,
+            "category": self.category,
+            "stop_type": str(self.stop_type),
+            "routes": self.routes,
+            "notes": self.notes,
+            "done": self.done
         }
 
     @classmethod

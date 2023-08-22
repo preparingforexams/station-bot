@@ -83,7 +83,7 @@ class ConfigmapState(State):
 
         decoded_value = base64.b64decode(self.configmap.data["state"]).decode("utf-8")
         state = json.loads(decoded_value)
-        state["stations"] = {station["id"]: Station.deserialize(station) for station in state.get("stations", [])}
+        state["stations"] = [Station.deserialize(station) for station in state.get("stations", [])]
 
         if update_global_state:
             self.state = state
@@ -94,7 +94,7 @@ class ConfigmapState(State):
 
     def write(self):
         state = self.state.copy()
-        state["stations"]: list[dict] = [sstation.serialize() for sstation in state["stations"].values()]
+        state["stations"]: list[dict] = [sstation.serialize() for sstation in state["stations"]]
         value = json.dumps(state).encode("utf-8")
         value = base64.b64encode(value).decode("utf-8")
         if not self.changed(value):
