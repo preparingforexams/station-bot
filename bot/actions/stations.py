@@ -88,8 +88,11 @@ class Station:
         return other.name == self.name
 
     def done_overview_string(self) -> str:
-        s = datetime.fromtimestamp(self.done_timestamp, tz=ZoneInfo("Europe/Berlin")).strftime("%d.%m.%Y")
-        return actions.escape_markdown(f"{self.name} ({s})")
+        if self.done_timestamp:
+            s = datetime.fromtimestamp(self.done_timestamp, tz=ZoneInfo("Europe/Berlin")).strftime("%d.%m.%Y")
+            return actions.escape_markdown(f"{self.name} ({s})")
+        else:
+            return actions.escape_markdown(self.name)
 
     def __str__(self):
         done_string = ""

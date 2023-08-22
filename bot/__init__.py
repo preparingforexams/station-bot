@@ -69,23 +69,39 @@ def find_station_in_caption(caption: str) -> Station:
     return matched_station
 
 
-def mark_station_as(_station: Station, done: bool) -> bool:
+def update_station(_station: Station) -> bool:
     stations = []
     marked = False
 
     for s in _state["stations"]:
         if s == _station:
-            s.done = done
-            if done:
-                s.done_timestamp = datetime.now(tz=ZoneInfo("Europe/Berlin"))
-            else:
-                s.done_timestamp = None
+            stations.append(_station)
             marked = True
-        stations.append(s)
+        else:
+            stations.append(s)
 
     if marked:
         _state["stations"] = stations
         _state.write()
+
+    return marked
+
+
+def mark_station_as(_station: Station, _done: bool) -> bool:
+    stations = []
+    marked = False
+
+    for s in _state["stations"]:
+        if s == _station:
+            s.done = _done
+            if _done:
+                s.done_timestamp = datetime.now(tz=ZoneInfo("Europe/Berlin")).timestamp()
+            else:
+                s.done_timestamp = None
+            marked = True
+
+    if marked:
+        return update_station(_station)
 
     return marked
 
@@ -124,3 +140,28 @@ async def progress(update: Update, _: ContextTypes.DEFAULT_TYPE):
     msg = message_header + "\n\n" + "\n".join(message_body)
     message = TextMessage(msg)
     return await message.send(update)
+
+
+async def set_timestamp(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    name = " ".join(context.args[:-1])
+    date_format = "%d.%m.%Y"
+
+    _station = find_station_in_caption(name)
+
+    if _station:
+        if _station.done:
+            try:
+                time = datetime.strptime(context.args[-1], date_format)
+                _station.done_timestamp = time.timestamp()
+                if update_station(_station):
+                    message = f"Set `timestamp` for {_station.name} at {time}"
+                else:
+                    message = f"Couldn't set timestamp for {_station.name} (probably not found)"
+            except ValueError as e:
+                message = f"Couldn't parse timestamp as {date_format} ({str(e)})"
+        else:
+            message = fr"Station hasn't been marked as done yet, not settings timestamp"
+    else:
+        message = "No station found"
+
+    return await TextMessage(escape_markdown(message)).send(update)

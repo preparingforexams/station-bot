@@ -31,6 +31,8 @@ def main():
     application.add_handler(done_handler)
     progress_handler = telegram.ext.CommandHandler("progress", bot.progress)
     application.add_handler(progress_handler)
+    set_timestamp_handler = telegram.ext.CommandHandler("set_timestamp", bot.set_timestamp)
+    application.add_handler(set_timestamp_handler)
 
     application.run_polling()
 
