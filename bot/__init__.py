@@ -1,6 +1,8 @@
 import inspect
 import random
 import re
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from kubernetes import config, client
 from telegram import Update
@@ -74,6 +76,10 @@ def mark_station_as(_station: Station, done: bool) -> bool:
     for s in _state["stations"]:
         if s == _station:
             s.done = done
+            if done:
+                s.done_timestamp = datetime.now(tz=ZoneInfo("Europe/Berlin"))
+            else:
+                s.done_timestamp = None
             marked = True
         stations.append(s)
 
@@ -106,8 +112,15 @@ async def done(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def progress(update: Update, _: ContextTypes.DEFAULT_TYPE):
     open_stations = [_station for _station in _state["stations"] if not _station.done]
+    done_stations = set(_state["stations"]) - set(open_stations)
 
     stations_total = len(_state['stations'])
-    stations_done = stations_total - len(open_stations)
-    message = TextMessage(escape_markdown(f"{stations_done} / {stations_total}"))
+    stations_done = len(done_stations)
+    message_header = escape_markdown(f"{stations_done} / {stations_total}")
+    message_body = []
+    for _station in done_stations:
+        message_body.append(_station.done_overview_string())
+
+    msg = message_header + "\n\n" + "\n".join(message_body)
+    message = TextMessage(msg)
     return await message.send(update)

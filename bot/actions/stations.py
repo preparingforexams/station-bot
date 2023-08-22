@@ -1,7 +1,9 @@
 import dataclasses
 import unicodedata
+from datetime import datetime
 from enum import Enum
 from typing import Optional, Self
+from zoneinfo import ZoneInfo
 
 import requests
 from bs4 import BeautifulSoup, Tag
@@ -80,11 +82,21 @@ class Station:
     routes: str
     notes: str
     done: bool
+    done_timestamp: Optional[int]
 
     def __eq__(self, other):
         return other.name == self.name
 
+    def done_overview_string(self) -> str:
+        s = datetime.fromtimestamp(self.done_timestamp, tz=ZoneInfo("Europe/Berlin")).strftime("%d.%m.%Y")
+        return actions.escape_markdown(f"{self.name} ({s})")
+
     def __str__(self):
+        done_string = ""
+        if self.done_timestamp:
+            s = datetime.fromtimestamp(self.done_timestamp, tz=ZoneInfo("Europe/Berlin")).strftime("%d.%m.%Y")
+            done_string = actions.escape_markdown(f"Done: {s}")
+
         return rf"""
 Name: [{actions.escape_markdown(self.name)}]({self.name_link})
 Betriebsstelle: {actions.escape_markdown(str(self.type))}
@@ -97,7 +109,7 @@ Kategorie: {actions.escape_markdown(self.category)}
 Halt\-Typ: {actions.escape_markdown(str(self.stop_type))}
 Strecke: {self.routes}
 Anmerkungen: {actions.escape_markdown(self.notes)}
-Done: {self.done}"""
+{done_string}"""
 
     def serialize(self):
         return {
@@ -114,7 +126,8 @@ Done: {self.done}"""
             "stop_type": str(self.stop_type),
             "routes": self.routes.strip(),
             "notes": self.notes.strip(),
-            "done": self.done
+            "done": self.done,
+            "done_timestamp": self.done_timestamp,
         }
 
     @classmethod
@@ -133,8 +146,12 @@ Done: {self.done}"""
             StopType.serialize(obj["stop_type"]),
             obj["routes"],
             obj["notes"],
-            bool(obj["done"]) if obj["done"] else False
+            bool(obj["done"]) if obj["done"] else False,
+            obj.get("done_timestamp"),
         )
+
+    def __hash__(self):
+        return hash(self.name + self.town)
 
 
 def get_link(t: Tag) -> str:
