@@ -25,3 +25,11 @@ configmap:
   name: stationbot
   state:
     name: stationstate
+
+role:
+  name: stationbot
+rolebinding:
+  name: stationbot
+serviceaccount:
+  name: stationbot
+
