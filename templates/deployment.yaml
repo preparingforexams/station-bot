@@ -20,7 +20,7 @@ spec:
         {{ $k }}: {{ $v }}
         {{- end }}
     spec:
-      serviceAccountName: {{ .Values.deployment.serviceAccountName }}
+      serviceAccountName: {{ .Values.serviceaccount.name }}
       containers:
         - name: {{ .Values.deployment.name }}
           image: {{ .Values.deployment.image }}
