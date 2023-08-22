@@ -29,6 +29,8 @@ def main():
     application.add_handler(done_handler)
     done_handler = telegram.ext.CommandHandler("done", bot.done)
     application.add_handler(done_handler)
+    progress_handler = telegram.ext.CommandHandler("progress", bot.progress)
+    application.add_handler(progress_handler)
 
     application.run_polling()
 

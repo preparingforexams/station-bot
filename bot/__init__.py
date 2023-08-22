@@ -102,3 +102,12 @@ async def done(update: Update, context: ContextTypes.DEFAULT_TYPE):
         message = "No station found"
 
     return await TextMessage(escape_markdown(message)).send(update)
+
+
+async def progress(update: Update, _: ContextTypes.DEFAULT_TYPE):
+    open_stations = [_station for _station in _state["stations"] if not _station.done]
+
+    stations_total = len(_state['stations'])
+    stations_done = stations_total - len(open_stations)
+    message = TextMessage(escape_markdown(f"{stations_done} / {stations_total}"))
+    return await message.send(update)
