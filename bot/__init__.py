@@ -7,7 +7,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from . import actions
-from .actions import MessageType, get_stations, TextMessage
+from .actions import MessageType, get_stations, TextMessage, escape_markdown
 from .actions.stations import Station
 from .logger import create_logger
 from .state import ConfigmapState
@@ -101,4 +101,4 @@ async def done(update: Update, _: ContextTypes.DEFAULT_TYPE):
     else:
         message = "No station found"
 
-    return await TextMessage(message).send(update)
+    return await TextMessage(escape_markdown(message)).send(update)
