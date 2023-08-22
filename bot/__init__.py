@@ -134,6 +134,8 @@ async def progress(update: Update, _: ContextTypes.DEFAULT_TYPE):
     stations_done = len(done_stations)
     message_header = escape_markdown(f"{stations_done} / {stations_total}")
     message_body = []
+
+    done_stations = sorted(done_stations, key=lambda s: s.name)
     for _station in done_stations:
         message_body.append(_station.done_overview_string())
 
