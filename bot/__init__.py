@@ -67,13 +67,13 @@ def find_station_in_caption(caption: str) -> Station:
     return matched_station
 
 
-def mark_station_as_done(_station: Station) -> bool:
+def mark_station_as(_station: Station, done: bool) -> bool:
     stations = []
     marked = False
 
     for s in _state["stations"]:
         if s == _station:
-            s.done = True
+            s.done = done
             marked = True
         stations.append(s)
 
@@ -94,7 +94,7 @@ async def done(update: Update, context: ContextTypes.DEFAULT_TYPE):
         log.debug(f"found {_station.name}")
         if _station.done:
             message = f"{_station.name} was already marked as 'done'"
-        elif mark_station_as_done(_station):
+        elif mark_station_as(_station, True):
             message = fr"Marked {_station.name} as done"
         else:
             message = f"Failed to mark {_station.name} as done, not found"
