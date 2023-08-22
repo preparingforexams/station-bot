@@ -84,18 +84,18 @@ def mark_station_as_done(_station: Station) -> bool:
     return marked
 
 
-async def done(update: Update, _: ContextTypes.DEFAULT_TYPE):
+async def done(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log = create_logger(inspect.currentframe().f_code.co_name)
 
-    text = update.effective_message.caption if update.effective_message.caption else update.effective_message.text
+    text = update.effective_message.caption if update.effective_message.caption else " ".join(context.args)
     _station = find_station_in_caption(text)
-    log.debug(f"found {_station}")
 
     if _station:
+        log.debug(f"found {_station.name}")
         if _station.done:
             message = f"{_station.name} was already marked as 'done'"
         elif mark_station_as_done(_station):
-            message = fr"Marked {_station.name} as done \({_station.done}\)"
+            message = fr"Marked {_station.name} as done"
         else:
             message = f"Failed to mark {_station.name} as done, not found"
     else:
