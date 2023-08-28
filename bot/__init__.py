@@ -88,7 +88,6 @@ def update_station(_station: Station) -> bool:
 
 
 def mark_station_as(_station: Station, _done: bool) -> bool:
-    stations = []
     marked = False
 
     for s in _state["stations"]:
