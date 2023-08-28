@@ -32,6 +32,8 @@ def get_stations_for_state(state: str) -> list[dict]:
 
 def find_station_by_name(name: str, *, state: str = "Schleswig-Holstein") -> dict:
     stations = get_stations_for_state(state)
+    match_length = 0
+    matched_station = None
 
     for _station in stations:
         if name == _station['name']:
