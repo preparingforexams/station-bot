@@ -11,6 +11,7 @@ from telegram.ext import ContextTypes
 from . import actions
 from .actions import MessageType, get_stations, TextMessage, escape_markdown
 from .actions.stations import Station
+from .deutsche_bahn import generate_planner_link
 from .logger import create_logger
 from .state import ConfigmapState
 
@@ -43,6 +44,8 @@ async def station(update: Update, _: ContextTypes.DEFAULT_TYPE):
     # noinspection PyShadowingNames
     station = random.choice(open_stations)
     log.debug(f"{station.name}")
+    planner_link = generate_planner_link("Husum", station.name)
+    station.planner_link = planner_link
 
     message = TextMessage(str(station))
     return await message.send(update)

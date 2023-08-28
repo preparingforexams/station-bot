@@ -40,6 +40,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: sed -i -e "s/__TELEGRAM_TOKEN__/${{ secrets.BOT_TOKEN }}/g" values.yaml
+      - run: sed -i -e "s/__DB_CLIENT_ID__/${{ secrets.DB_CLIENT_ID }}/g" values.yaml
+      - run: sed -i -e "s/__DB_CLIENT_SECRET__/${{ secrets.DB_CLIENT_SECRET }}/g" values.yaml
       - run: sed -i -e "s/__TAG__/${GITHUB_SHA}/g" values.yaml
       - name: install helm chart
         uses: BlindfoldedSurgery/github-action-helm@v0.3.0

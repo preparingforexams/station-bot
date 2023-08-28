@@ -83,6 +83,7 @@ class Station:
     notes: str
     done: bool
     done_timestamp: Optional[int]
+    planner_link: Optional[str]
 
     def __eq__(self, other):
         return other.name == self.name
@@ -96,9 +97,12 @@ class Station:
 
     def __str__(self):
         done_string = ""
+        planner_link_string_string = ""
         if self.done_timestamp:
             s = datetime.fromtimestamp(self.done_timestamp, tz=ZoneInfo("Europe/Berlin")).strftime("%d.%m.%Y")
             done_string = actions.escape_markdown(f"Done: {s}")
+        if getattr(self, "planner_link"):
+            planner_link_string = f"[DB Plan]({self.planner_link})"
 
         return rf"""
 Name: [{actions.escape_markdown(self.name)}]({self.name_link})
@@ -112,7 +116,8 @@ Kategorie: {actions.escape_markdown(self.category)}
 Halt\-Typ: {actions.escape_markdown(str(self.stop_type))}
 Strecke: {self.routes}
 Anmerkungen: {actions.escape_markdown(self.notes)}
-{done_string}"""
+{done_string}
+{planner_link_string}"""
 
     def serialize(self):
         return {
@@ -151,6 +156,7 @@ Anmerkungen: {actions.escape_markdown(self.notes)}
             obj["notes"],
             bool(obj["done"]) if obj["done"] else False,
             obj.get("done_timestamp"),
+            None,
         )
 
     def __hash__(self):
