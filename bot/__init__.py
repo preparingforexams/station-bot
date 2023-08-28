@@ -44,8 +44,13 @@ async def station(update: Update, _: ContextTypes.DEFAULT_TYPE):
     # noinspection PyShadowingNames
     station = random.choice(open_stations)
     log.debug(f"{station.name}")
-    planner_link = generate_planner_link("Husum", station.name)
-    station.planner_link = planner_link
+
+    # noinspection PyBroadException
+    try:
+        planner_link = generate_planner_link("Husum", station.name)
+        station.planner_link = planner_link
+    except Exception:
+        log.error("couldn't generate db planner link", exc_info=True)
 
     message = TextMessage(str(station))
     return await message.send(update)
