@@ -68,16 +68,19 @@ def generate_planner_link(origin: str, destination: str) -> str:
         "soid": generate_oid(find_station_by_name(origin)),
         "zoid": generate_oid(find_station_by_name(destination)),
     }
+
     params.update({
         "sts": "true",
         "so": origin,
         "zo": destination,
         "kl": 2,
-        "r": f"{now_r}:KLASSENLOS:1",
+        "r": f"13:16:KLASSENLOS:1",
         "hd": now.strftime("%Y-%m-%dT%H:%M:%S"),
         "hza": "D",
         "ar": "false",
+        # fastest connection
         "s": "true",
+        # direct connections only
         "d": "false",
         "hz": "%5B%5D",
         "fm": "false",
