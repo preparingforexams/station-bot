@@ -62,7 +62,6 @@ def generate_oid(station: dict) -> str:
 
 def generate_planner_link(origin: str, destination: str) -> str:
     now = datetime.now(tz=ZoneInfo("Europe/Berlin"))
-    now_r = now.strftime("%H:%M")
 
     params = {
         "soid": generate_oid(find_station_by_name(origin)),
