@@ -42,7 +42,7 @@ async def station(update: Update, _: ContextTypes.DEFAULT_TYPE):
     open_stations = [_station for _station in _state["stations"] if not _station.done]
     log.debug(f"{len(open_stations)} are available to choose from")
     # noinspection PyShadowingNames
-    station = random.choice(open_stations)
+    station: Station = random.choice(open_stations)
     log.debug(f"{station.name}")
 
     # noinspection PyBroadException

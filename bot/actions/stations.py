@@ -97,7 +97,7 @@ class Station:
 
     def __str__(self):
         done_string = ""
-        planner_link_string_string = ""
+        planner_link_string = ""
         if self.done_timestamp:
             s = datetime.fromtimestamp(self.done_timestamp, tz=ZoneInfo("Europe/Berlin")).strftime("%d.%m.%Y")
             done_string = actions.escape_markdown(f"Done: {s}")
