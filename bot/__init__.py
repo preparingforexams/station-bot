@@ -173,3 +173,8 @@ async def set_timestamp(update: Update, context: ContextTypes.DEFAULT_TYPE):
         message = "No station found"
 
     return await TextMessage(escape_markdown(message)).send(update)
+
+
+async def stations(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    message = "\n".join([escape_markdown(s.name) for s in _state["stations"]])
+    await TextMessage(message).send(update)
