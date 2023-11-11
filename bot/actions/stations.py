@@ -163,6 +163,21 @@ Anmerkungen: {actions.escape_markdown(self.notes)}
     def __hash__(self):
         return hash(self.name + self.town)
 
+    def update_upstream_parameters(self, _station: Self):
+        self.name = _station.name
+        self.name_link = _station.name_link
+        self.type = _station.type
+        self.tracks = _station.tracks
+        self.town = _station.town
+        self.town_link = _station.town_link
+        self.district = _station.district
+        self.opening = _station.opening
+        self.transport_association = _station.transport_association
+        self.category = _station.category
+        self.stop_type = _station.stop_type
+        self.routes = _station.routes
+        self.notes = _station.notes
+
 
 def get_link(t: Tag) -> str:
     a = t.find("a")

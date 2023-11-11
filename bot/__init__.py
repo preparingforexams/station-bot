@@ -29,6 +29,73 @@ if not _state["stations"]:
     _state.write()
 
 
+def update_station(_station: Station) -> bool:
+    _stations = []
+    marked = False
+
+    for s in _state["stations"]:
+        if s == _station:
+            _stations.append(_station)
+            marked = True
+        else:
+            _stations.append(s)
+
+    if marked:
+        _state["stations"] = _stations
+        _state.write()
+
+    return marked
+
+
+def remove_station(_station: Station):
+    new = []
+    for s in _state["stations"]:
+        if s == _station:
+            continue
+        new.append(s)
+
+    _state["stations"] = new
+
+
+def get_station(_station: Station, _stations: list[Station] = None) -> Station | None:
+    if not _stations:
+        _stations = _state["stations"]
+
+    try:
+        return [s for s in _stations if s == _station][0]
+    except IndexError:
+        return None
+
+
+def update_stations():
+    log = create_logger(inspect.currentframe().f_code.co_name)
+    log.debug("updating stations")
+
+    upstream_stations = get_stations()
+    current_stations: list[Station] = _state["stations"]
+    new = []
+
+    for upstream_station in upstream_stations:
+        _station = get_station(upstream_station, current_stations)
+        if _station is None:
+            new.append(upstream_station)
+        else:
+            _station.update_upstream_parameters(upstream_station)
+            new.append(_station)
+
+    updated = []
+    for current_station in new:
+        if get_station(current_station, upstream_stations) is not None:
+            updated.append(current_station)
+
+    _state["stations"] = updated
+    _state.write()
+    log.debug("finished updating stations")
+
+
+update_stations()
+
+
 def send_telegram_error_message(message: str, *, _: Update = None):
     log = create_logger(inspect.currentframe().f_code.co_name)
 
@@ -56,16 +123,18 @@ async def station(update: Update, _: ContextTypes.DEFAULT_TYPE):
     return await message.send(update)
 
 
-def find_station_in_caption(caption: str) -> Station:
+def find_station_in_caption(name: str, stations: list[Station] = None) -> Station:
+    if stations is None:
+        stations = _state["stations"]
+
     match_length = 0
     matched_station = None
 
-    stations = _state["stations"]
     for _station in stations:
-        if caption == _station.name:
+        if name == _station.name:
             return _station
 
-        found = re.findall(fr"({_station.name})", caption, re.UNICODE | re.MULTILINE | re.IGNORECASE)
+        found = re.findall(fr"({_station.name})", name, re.UNICODE | re.MULTILINE | re.IGNORECASE)
         non_empty = [s for s in found if s]
         if not non_empty:
             continue
@@ -75,24 +144,6 @@ def find_station_in_caption(caption: str) -> Station:
             match_length = len(best_match)
 
     return matched_station
-
-
-def update_station(_station: Station) -> bool:
-    stations = []
-    marked = False
-
-    for s in _state["stations"]:
-        if s == _station:
-            stations.append(_station)
-            marked = True
-        else:
-            stations.append(s)
-
-    if marked:
-        _state["stations"] = stations
-        _state.write()
-
-    return marked
 
 
 def mark_station_as(_station: Station, _done: bool) -> bool:
