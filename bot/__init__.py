@@ -100,7 +100,6 @@ def mark_station_as(_station: Station, _done: bool) -> bool:
 
     for s in _state["stations"]:
         if s == _station:
-            s.done = _done
             if _done:
                 s.done_timestamp = datetime.now(tz=ZoneInfo("Europe/Berlin")).timestamp()
             else:

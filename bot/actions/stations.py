@@ -81,7 +81,6 @@ class Station:
     stop_type: StopType
     routes: str
     notes: str
-    done: bool
     done_timestamp: Optional[int]
     planner_link: Optional[str]
 
@@ -134,7 +133,6 @@ Anmerkungen: {actions.escape_markdown(self.notes)}
             "stop_type": str(self.stop_type),
             "routes": self.routes.strip(),
             "notes": self.notes.strip(),
-            "done": self.done,
             "done_timestamp": self.done_timestamp,
         }
 
@@ -154,10 +152,13 @@ Anmerkungen: {actions.escape_markdown(self.notes)}
             StopType.serialize(obj["stop_type"]),
             obj["routes"],
             obj["notes"],
-            bool(obj["done"]) if obj["done"] else False,
             obj.get("done_timestamp"),
             None,
         )
+
+    @property
+    def done(self):
+        return self.done_timestamp is not None
 
     def __hash__(self):
         return hash(self.name + self.town)
@@ -222,7 +223,8 @@ def get_stations() -> Optional[list[Station]]:
             stop_type=StopType.from_columns(column_strings[8], column_strings[9], column_strings[10]),
             routes=format_routes(columns[11]),
             notes=column_strings[12],
-            done=False,
+            done_timestamp=None,
+            planner_link=None,
         )
 
         stations.append(station)
