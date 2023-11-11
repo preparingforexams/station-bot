@@ -227,5 +227,7 @@ async def set_timestamp(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def stations(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    message = "\n".join([escape_markdown(s.name) for s in _state["stations"]])
+    format_station = lambda s: escape_markdown(f"{s.name} {'(done)' if s.done else ''}")
+
+    message = "\n".join([format_station(s) for s in _state["stations"]])
     await TextMessage(message).send(update)
