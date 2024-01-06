@@ -32,7 +32,7 @@ class StopType(Enum):
     S = "S-Bahn"
 
     @classmethod
-    def from_columns(cls, c1: str, c2: str, c3: str):
+    def from_columns(cls, c1: str, c2: str, _c3: str):
         if len(c1) != 0:
             return cls.F
         elif len(c2) != 0:
