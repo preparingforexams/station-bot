@@ -12,6 +12,7 @@ from . import actions
 from .actions import MessageType, get_stations, TextMessage, escape_markdown
 from .actions.stations import Station
 from .deutsche_bahn import generate_planner_link
+from .imported_stations import STATIONS
 from .logger import create_logger
 from .state import ConfigmapState
 
@@ -88,6 +89,8 @@ def update_stations():
         if get_station(current_station, upstream_stations) is not None:
             updated.append(current_station)
 
+    for s in STATIONS:
+        updated.append(Station.deserialize(s))
     _state["stations"] = updated
     _state.write()
     log.debug("finished updating stations")

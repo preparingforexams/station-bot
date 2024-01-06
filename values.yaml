@@ -34,4 +34,3 @@ rolebinding:
   name: stationbot
 serviceaccount:
   name: stationbot
-
