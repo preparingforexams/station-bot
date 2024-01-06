@@ -57,10 +57,12 @@ def format_routes(route_tag: Tag) -> str:
     routes = []
     for a in route_tag.find_all("a"):
         link = a["href"]
-        if not link.startswith("https://"):
-            link = f"https://de.wikipedia.org{link}"
-        if not link:
+        cls = a.attrs.get("class", [])
+        # a 'new' class marks the link as red indicating that the site does not yet exist
+        if not link or "new" in cls:
             link = " "
+        elif not link.startswith("https://"):
+            link = f"https://de.wikipedia.org{link}"
         routes.append(f"[{actions.escape_markdown(a.text)}]({actions.escape_markdown(link)})")
 
     return "\n".join(routes)
@@ -185,6 +187,11 @@ def get_link(t: Tag) -> str:
         return " "
 
     link = a["href"]
+    cls = a.attrs.get("class", [])
+    # a 'new' class marks the link as red indicating that the site does not yet exist
+    if "new" in cls:
+        return " "
+
     if not link.startswith("https://"):
         link = f"https://de.wikipedia.org/{link}"
 
