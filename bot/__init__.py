@@ -93,7 +93,11 @@ def update_stations():
     log.debug("finished updating stations")
 
 
-update_stations()
+# noinspection PyBroadException
+try:
+    update_stations()
+except Exception as e:
+    create_logger("update_stations").error("failed to update stations, continuing", exc_info=True)
 
 
 def send_telegram_error_message(message: str, *, _: Update = None):
