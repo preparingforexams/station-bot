@@ -4,7 +4,7 @@ STATIONS = [
     {
         "name": "Boren-Lindaunis Schleibrücke Nord".strip(),
         "name_link": " ",
-        "type": "BHF",
+        "type": "Bf",
         "tracks": None,
         "town": "",
         "town_link": "",
@@ -20,7 +20,7 @@ STATIONS = [
     {
         "name": "Rieseby Schleibrücke Süd".strip(),
         "name_link": " ",
-        "type": "BHF",
+        "type": "Bf",
         "tracks": None,
         "town": "",
         "town_link": "",
@@ -36,7 +36,7 @@ STATIONS = [
     {
         "name": "Lübeck-Moisling".strip(),
         "name_link": " ",
-        "type": "BHF",
+        "type": "Bf",
         "tracks": None,
         "town": "",
         "town_link": "",
