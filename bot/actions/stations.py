@@ -17,7 +17,7 @@ class StationType(Enum):
 
     @classmethod
     def from_str(cls, s: str) -> Self:
-        if s.lower() == "hp":
+        if s.lower() == "hp" or s.lower() == StationType.HALTEPUNKT.value.lower():
             return cls.HALTEPUNKT
 
         return cls.BAHNHOF
