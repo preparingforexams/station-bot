@@ -172,8 +172,10 @@ def mark_station_as(_station: Station, _done: bool) -> bool:
 
 async def done(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log = create_logger(inspect.currentframe().f_code.co_name)
+    # context.args is None when the message is not of type text (`PHOTO` in this case)
+    context_args = context.args if context.args else []
 
-    text = update.effective_message.caption if update.effective_message.caption else " ".join(context.args)
+    text = update.effective_message.caption if update.effective_message.caption else " ".join(context_args)
     _station = find_station_in_caption(text)
 
     if _station:
