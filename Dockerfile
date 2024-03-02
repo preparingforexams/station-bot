@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app/build
 
-RUN pip install poetry==1.6.1
+RUN pip install poetry==1.8.2
 
 WORKDIR /app
 
