@@ -31,6 +31,6 @@ jobs:
           subcommand: upgrade
           release_name: stationbot
           ref: chart
-          namespace: timhatdiehandandermaus
+          namespace: station-bot
           install: true
           kubeconfig: ${{ secrets.BORN_KUBECONFIG_RAW }}
