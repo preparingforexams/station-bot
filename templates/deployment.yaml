@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.deployment.name }}
-  namespace: {{ .Values.namespace }}
 spec:
   revisionHistoryLimit: {{ .Values.deployment.revisionHistoryLimit }}
   replicas: {{ .Values.deployment.replicas }}
