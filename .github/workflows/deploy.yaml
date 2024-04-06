@@ -1,0 +1,36 @@
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-container-image:
+    uses: BlindfoldedSurgery/actions-container/.github/workflows/build-image-docker.yml@v3
+    with:
+      platform: "linux/arm64"
+      push-image: ${{ github.ref_name == github.event.repository.default_branch }}
+
+  deploy:
+    runs-on: born-prep
+    container: ghcr.io/bjoernpetersen/helm:2.1.0
+    concurrency: production
+    needs: build-container-image
+    steps:
+      - uses: actions/checkout@v4
+      - run: sed -i -e "s/__TELEGRAM_TOKEN__/${{ secrets.BOT_TOKEN }}/g" values.yaml
+        working-directory: chart
+      - run: sed -i -e "s/__DB_CLIENT_ID__/${{ secrets.DB_CLIENT_ID }}/g" values.yaml
+        working-directory: chart
+      - run: sed -i -e "s/__DB_CLIENT_SECRET__/${{ secrets.DB_CLIENT_SECRET }}/g" values.yaml
+        working-directory: chart
+      - run: sed -i -e "s/__TAG__/${GITHUB_SHA}/g" values.yaml
+        working-directory: chart
+      - name: install helm chart
+        uses: BlindfoldedSurgery/github-action-helm@v0.3.0
+        with:
+          subcommand: upgrade
+          release_name: stationbot
+          ref: chart
+          namespace: timhatdiehandandermaus
+          install: true
+          kubeconfig: ${{ secrets.BORN_KUBECONFIG_RAW }}
