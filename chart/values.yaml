@@ -8,12 +8,9 @@ deployment:
   replicas: 1
   labels:
     app: stationbot
-  requests:
-    cpu: 50m
-    memory: 50Mi
   limits:
-    cpu: 300m
-    memory: 300Mi
+    cpu: 100m
+    memory: 265Mi
   updateStrategy: Recreate
 
 secret:
