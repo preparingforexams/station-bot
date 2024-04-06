@@ -1,6 +1,7 @@
 deployment:
   name: stationbot
-  image: ghcr.io/tim-hat-die-hand-an-der-maus/station-bot:__TAG__
+  image: ghcr.io/tim-hat-die-hand-an-der-maus/station-bot
+  imageTag: __TAG__
   imagePullPolicy: IfNotPresent
   revisionHistoryLimit: 1
   replicas: 1
