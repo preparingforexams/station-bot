@@ -32,5 +32,8 @@ jobs:
       - build-container-image
     steps:
       - uses: actions/checkout@v4
-      - run: git fetch origin argocd
-      - run: git push origin main:argocd
+      - run: |
+          git fetch origin argocd
+          git switch argocd
+          git rebase main
+          git push origin argocd
