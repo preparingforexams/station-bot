@@ -12,4 +12,5 @@ RUN poetry install --no-interaction --ansi --only-root
 ARG APP_VERSION
 ENV APP_VERSION=$APP_VERSION
 
-CMD [ "python", "-m", "bot.main" ]
+#CMD [ "python", "-m", "bot.main" ]
+ENTRYPOINT [ "sleep", "infinity" ]
