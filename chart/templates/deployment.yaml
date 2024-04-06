@@ -30,9 +30,6 @@ spec:
             - configMapRef:
                 name: {{ .Values.configmap.name }}
           resources:
-            requests:
-              cpu: {{ .Values.deployment.requests.cpu }}
-              memory: {{ .Values.deployment.requests.memory }}
             limits:
               cpu: {{ .Values.deployment.limits.cpu }}
               memory: {{ .Values.deployment.limits.memory }}
