@@ -4,8 +4,7 @@ version = "1.0.0"
 description = ""
 authors = ["BlindfoldedSurgery <team@blindfolded.surgery>"]
 license = "MIT"
-readme = "README.md"
-package-mode = false
+packages = [{ from = "src", include = "bot" }]
 
 [tool.poetry.dependencies]
 python = "~3.12"
