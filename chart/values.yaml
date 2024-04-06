@@ -17,15 +17,11 @@ deployment:
 
 secret:
   name: station-bot
-  botToken: __TELEGRAM_TOKEN__
 
 configmap:
   name: stationbot
   state:
     name: stationstate
-  db:
-    clientId: __DB_CLIENT_ID__
-    clientSecret: __DB_CLIENT_SECRET__
 
 role:
   name: stationbot

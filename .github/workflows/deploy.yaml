@@ -17,12 +17,6 @@ jobs:
     needs: build-container-image
     steps:
       - uses: actions/checkout@v4
-      - run: sed -i -e "s/__TELEGRAM_TOKEN__/${{ secrets.BOT_TOKEN }}/g" values.yaml
-        working-directory: chart
-      - run: sed -i -e "s/__DB_CLIENT_ID__/${{ secrets.DB_CLIENT_ID }}/g" values.yaml
-        working-directory: chart
-      - run: sed -i -e "s/__DB_CLIENT_SECRET__/${{ secrets.DB_CLIENT_SECRET }}/g" values.yaml
-        working-directory: chart
       - run: sed -i -e "s/__TAG__/${GITHUB_SHA}/g" values.yaml
         working-directory: chart
       - name: install helm chart
