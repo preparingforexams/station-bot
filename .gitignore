@@ -3,6 +3,6 @@ venv/
 .idea/
 *.iml
 
-bot/*/__pycache__
-bot/__pycache__
+*_cache/
+__pycache__
 test_api_ninjas.py
