@@ -22,7 +22,7 @@ spec:
       serviceAccountName: {{ .Values.serviceaccount.name }}
       containers:
         - name: {{ .Values.deployment.name }}
-          image: {{ .Values.deployment.image }}:{{ .Values.deployment.imageTag }}
+          image: {{ .Values.deployment.image }}:{{ .Values.appVersion }}
           imagePullPolicy: {{ .Values.deployment.imagePullPolicy }}
           envFrom:
             - secretRef:
