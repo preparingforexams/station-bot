@@ -1,5 +1,5 @@
 {
   "extends": [
-    "github>tim-hat-die-hand-an-der-maus/renovate-config"
+    "github>preparingforexams/renovate-config"
   ]
 }

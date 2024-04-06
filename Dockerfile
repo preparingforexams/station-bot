@@ -1,19 +1,15 @@
-FROM python:3.11-slim
-
-WORKDIR /app/build
-
-RUN pip install poetry==1.8.2
-
-WORKDIR /app
-
-RUN poetry config virtualenvs.create false
+FROM ghcr.io/blindfoldedsurgery/poetry:2.0.0-pipx-3.12-bookworm
 
 COPY [ "poetry.toml", "poetry.lock", "pyproject.toml", "./" ]
 
-RUN poetry install --only main
+RUN poetry install --no-interaction --ansi --only=main --no-root
 
-COPY bot/ bot/
-COPY main.py main.py
+# We don't want the tests
+COPY src/bot ./src/bot
 
-ENV PYTHONUNBUFFERED=1
-ENTRYPOINT [ "python", "main.py" ]
+RUN poetry install --no-interaction --ansi --only-root
+
+ARG APP_VERSION
+ENV APP_VERSION=$APP_VERSION
+
+CMD [ "python", "-m", "bot.main" ]
