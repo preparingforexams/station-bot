@@ -1,4 +1,3 @@
-from bot.actions.stations import StationType
 
 STATIONS = [
     {
@@ -48,5 +47,5 @@ STATIONS = [
         "routes": "[Lübeck–Hamburg](https://de.wikipedia.org/wiki/Bahnstrecke_L%C3%BCbeck%E2%80%93Hamburg)",
         "notes": "",
         "done_timestamp": None,
-    }
+    },
 ]

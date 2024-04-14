@@ -31,8 +31,9 @@ class TextMessage(Message):
         messages = self.split()
         first = True
         for message in messages:
-            await update.effective_message.reply_text(message, parse_mode=self.parse_mode,
-                                                      disable_notification=not first)
+            await update.effective_message.reply_text(
+                message, parse_mode=self.parse_mode, disable_notification=not first
+            )
             first = False
             time.sleep(1)
 
@@ -56,8 +57,10 @@ class TextMessage(Message):
                 messages.append([])
 
             line_length = len(line)
-            if current_message_length + line_length + (
-                    len(messages[current_message_index]) * join_by_length) < message_length:
+            if (
+                current_message_length + line_length + (len(messages[current_message_index]) * join_by_length)
+                < message_length
+            ):
                 current_message_length += line_length
                 messages[current_message_index].append(line)
                 line_index += 1

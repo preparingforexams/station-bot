@@ -20,10 +20,10 @@ class State:
         self.write()
 
     def read(self, update_global_state: bool = True) -> dict[str, Any]:
-        raise NotImplemented
+        raise NotImplementedError
 
     def write(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def set(self, key: str, value: Any):
         self.state[key] = value
@@ -68,7 +68,7 @@ class ConfigmapState(State):
                     name=self.name,
                     namespace=self.namespace,
                 ),
-                data={}
+                data={},
             )
             self.configmap = self.api.create_namespaced_config_map(self.namespace, configmap)
             self.configmap.data = self.state
@@ -79,7 +79,7 @@ class ConfigmapState(State):
         self.configmap = self.api.read_namespaced_config_map(self.name, self.namespace)
 
         if not self.configmap.data:
-            self.configmap.data = {"state": base64.b64encode('{"stations": []}'.encode('utf-8'))}
+            self.configmap.data = {"state": base64.b64encode('{"stations": []}'.encode("utf-8"))}
 
         decoded_value = base64.b64decode(self.configmap.data["state"]).decode("utf-8")
         state = json.loads(decoded_value)

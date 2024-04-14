@@ -11,7 +11,6 @@ from telegram.ext import ContextTypes
 from . import actions
 from .actions import MessageType, get_stations, TextMessage, escape_markdown
 from .actions.stations import Station
-from .deutsche_bahn import generate_planner_link
 from .imported_stations import STATIONS
 from .logger import create_logger
 from .state import ConfigmapState
@@ -99,7 +98,7 @@ def update_stations():
 # noinspection PyBroadException
 try:
     update_stations()
-except Exception as e:
+except Exception:
     create_logger("update_stations").error("failed to update stations, continuing", exc_info=True)
 
 
@@ -119,13 +118,6 @@ async def station(update: Update, _: ContextTypes.DEFAULT_TYPE):
     station: Station = random.choice(open_stations)
     log.debug(f"{station.name}")
 
-    # noinspection PyBroadException
-    try:
-        planner_link = generate_planner_link("Husum", station.name)
-        station.planner_link = planner_link
-    except Exception:
-        log.error("couldn't generate db planner link", exc_info=True)
-
     message = TextMessage(str(station))
     return await message.send(update)
 
@@ -141,7 +133,7 @@ def find_station_in_caption(name: str, stations: list[Station] = None) -> Statio
         if name == _station.name:
             return _station
 
-        found = re.findall(fr"({_station.name})", name, re.UNICODE | re.MULTILINE | re.IGNORECASE)
+        found = re.findall(rf"({_station.name})", name, re.UNICODE | re.MULTILINE | re.IGNORECASE)
         non_empty = [s for s in found if s]
         if not non_empty:
             continue
@@ -183,7 +175,7 @@ async def done(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if _station.done:
             message = f"{_station.name} was already marked as 'done'"
         elif mark_station_as(_station, True):
-            message = fr"Marked {_station.name} as done"
+            message = rf"Marked {_station.name} as done"
         else:
             message = f"Failed to mark {_station.name} as done, not found"
     else:
@@ -196,7 +188,7 @@ async def progress(update: Update, _: ContextTypes.DEFAULT_TYPE):
     open_stations = [_station for _station in _state["stations"] if not _station.done]
     done_stations = set(_state["stations"]) - set(open_stations)
 
-    stations_total = len(_state['stations'])
+    stations_total = len(_state["stations"])
     stations_done = len(done_stations)
     message_header = escape_markdown(f"{stations_done} / {stations_total}")
     message_body = []
@@ -228,7 +220,7 @@ async def set_timestamp(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except ValueError as e:
                 message = f"Couldn't parse timestamp as {date_format} ({str(e)})"
         else:
-            message = fr"Station hasn't been marked as done yet, not settings timestamp"
+            message = r"Station hasn't been marked as done yet, not settings timestamp"
     else:
         message = "No station found"
 
