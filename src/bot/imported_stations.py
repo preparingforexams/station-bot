@@ -1,4 +1,3 @@
-
 STATIONS = [
     {
         "name": "Boren-Lindaunis Schleibrücke Nord".strip(),

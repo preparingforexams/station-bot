@@ -7,9 +7,6 @@ from typing import List
 import telegram.constants
 from telegram import Update
 
-from .stations import get_stations
-from .utils import escape_markdown, get_json_from_url, RequestError
-
 
 class MessageType(Enum):
     Text = "text"
@@ -28,10 +25,14 @@ class Message:
 @dataclasses.dataclass
 class TextMessage(Message):
     async def send(self, update: Update):
+        effective_message = update.effective_message
+        if effective_message is None:
+            raise ValueError("Unexpected non-message update")
+
         messages = self.split()
         first = True
         for message in messages:
-            await update.effective_message.reply_text(
+            await effective_message.reply_text(
                 message, parse_mode=self.parse_mode, disable_notification=not first
             )
             first = False
@@ -58,7 +59,9 @@ class TextMessage(Message):
 
             line_length = len(line)
             if (
-                current_message_length + line_length + (len(messages[current_message_index]) * join_by_length)
+                current_message_length
+                + line_length
+                + (len(messages[current_message_index]) * join_by_length)
                 < message_length
             ):
                 current_message_length += line_length
@@ -78,7 +81,11 @@ class PhotoMessage(Message):
     caption: str = ""
 
     async def send(self, update: Update):
-        await update.effective_message.reply_photo(
+        effective_message = update.effective_message
+        if effective_message is None:
+            raise ValueError("Unexpected non-message update")
+
+        await effective_message.reply_photo(
             self.url,
             caption=self.caption[:1024],
             parse_mode=self.parse_mode,

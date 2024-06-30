@@ -48,7 +48,9 @@ class ConfigmapState(State):
         self.namespace = os.getenv("CONFIGMAP_NAMESPACE")
 
         if not self.name or not self.namespace:
-            raise ValueError("`CONFIGMAP_NAME` and `CONFIGMAP_NAMESPACE` have to be defined")
+            raise ValueError(
+                "`CONFIGMAP_NAME` and `CONFIGMAP_NAMESPACE` have to be defined"
+            )
         self.configmap: Optional[V1ConfigMap] = None
         super().__init__(state)
 
@@ -70,7 +72,9 @@ class ConfigmapState(State):
                 ),
                 data={},
             )
-            self.configmap = self.api.create_namespaced_config_map(self.namespace, configmap)
+            self.configmap = self.api.create_namespaced_config_map(
+                self.namespace, configmap
+            )
             self.configmap.data = self.state
 
         super().initialize()
@@ -79,11 +83,15 @@ class ConfigmapState(State):
         self.configmap = self.api.read_namespaced_config_map(self.name, self.namespace)
 
         if not self.configmap.data:
-            self.configmap.data = {"state": base64.b64encode('{"stations": []}'.encode("utf-8"))}
+            self.configmap.data = {
+                "state": base64.b64encode('{"stations": []}'.encode("utf-8"))
+            }
 
         decoded_value = base64.b64decode(self.configmap.data["state"]).decode("utf-8")
         state = json.loads(decoded_value)
-        state["stations"] = [Station.deserialize(station) for station in state.get("stations", [])]
+        state["stations"] = [
+            Station.deserialize(station) for station in state.get("stations", [])
+        ]
 
         if update_global_state:
             self.state = state
@@ -94,7 +102,9 @@ class ConfigmapState(State):
 
     def write(self):
         state = self.state.copy()
-        state["stations"]: list[dict] = [sstation.serialize() for sstation in state["stations"]]
+        state["stations"]: list[dict] = [
+            sstation.serialize() for sstation in state["stations"]
+        ]
         value = json.dumps(state).encode("utf-8")
         value = base64.b64encode(value).decode("utf-8")
         if not self.changed(value):

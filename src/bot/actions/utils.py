@@ -1,11 +1,10 @@
 import inspect
 import socket
-from typing import Dict, Optional
 
 import requests as requests
 import urllib3 as urllib3
 
-from bot.logger import create_logger
+from bot.logger import create_logger_with_frame
 
 
 def escape_markdown(text: str) -> str:
@@ -39,8 +38,8 @@ class RequestError(Exception):
     pass
 
 
-def get_json_from_url(url: str, *, headers: Dict = None) -> Optional[Dict]:
-    log = create_logger(inspect.currentframe().f_code.co_name)
+def get_json_from_url(url: str, *, headers: dict | None = None) -> dict | None:
+    log = create_logger_with_frame(inspect.currentframe(), __name__)
 
     try:
         response = requests.get(url, headers=headers)

@@ -2,17 +2,19 @@ import inspect
 import random
 import re
 from datetime import datetime
-from zoneinfo import ZoneInfo
+from typing import Any, cast
 
-from kubernetes import config, client
+from kubernetes import client, config
+from telegram import Message as TelegramMessage
 from telegram import Update
 from telegram.ext import ContextTypes
+from zoneinfo import ZoneInfo
 
-from . import actions
-from .actions import MessageType, get_stations, TextMessage, escape_markdown
-from .actions.stations import Station
+from .actions import TextMessage
+from .actions.stations import Station, get_stations
+from .actions.utils import escape_markdown
 from .imported_stations import STATIONS
-from .logger import create_logger
+from .logger import create_logger, create_logger_with_frame
 from .state import ConfigmapState
 
 try:
@@ -57,9 +59,12 @@ def remove_station(_station: Station):
     _state["stations"] = new
 
 
-def get_station(_station: Station, _stations: list[Station] = None) -> Station | None:
+def get_station(
+    _station: Station,
+    _stations: list[Station] | None = None,
+) -> Station | None:
     if not _stations:
-        _stations = _state["stations"]
+        _stations = cast(list[Station], _state["stations"])
 
     try:
         return [s for s in _stations if s == _station][0]
@@ -68,7 +73,7 @@ def get_station(_station: Station, _stations: list[Station] = None) -> Station |
 
 
 def update_stations():
-    log = create_logger(inspect.currentframe().f_code.co_name)
+    log = create_logger_with_frame(inspect.currentframe(), __name__)
     log.debug("updating stations")
 
     upstream_stations = get_stations()
@@ -99,17 +104,19 @@ def update_stations():
 try:
     update_stations()
 except Exception:
-    create_logger("update_stations").error("failed to update stations, continuing", exc_info=True)
+    create_logger("update_stations").error(
+        "failed to update stations, continuing", exc_info=True
+    )
 
 
-def send_telegram_error_message(message: str, *, _: Update = None):
-    log = create_logger(inspect.currentframe().f_code.co_name)
+def send_telegram_error_message(message: str, *, _: Any = None):
+    log = create_logger_with_frame(inspect.currentframe(), __name__)
 
     log.error(message)
 
 
 async def station(update: Update, _: ContextTypes.DEFAULT_TYPE):
-    log = create_logger(inspect.currentframe().f_code.co_name)
+    log = create_logger_with_frame(inspect.currentframe(), __name__)
 
     log.debug(f"{len(_state['stations'])} are registered")
     open_stations = [_station for _station in _state["stations"] if not _station.done]
@@ -122,9 +129,11 @@ async def station(update: Update, _: ContextTypes.DEFAULT_TYPE):
     return await message.send(update)
 
 
-def find_station_in_caption(name: str, stations: list[Station] = None) -> Station:
+def find_station_in_caption(
+    name: str, stations: list[Station] | None = None
+) -> Station | None:
     if stations is None:
-        stations = _state["stations"]
+        stations = cast(list[Station], _state["stations"])
 
     match_length = 0
     matched_station = None
@@ -133,7 +142,9 @@ def find_station_in_caption(name: str, stations: list[Station] = None) -> Statio
         if name == _station.name:
             return _station
 
-        found = re.findall(rf"({_station.name})", name, re.UNICODE | re.MULTILINE | re.IGNORECASE)
+        found = re.findall(
+            rf"({_station.name})", name, re.UNICODE | re.MULTILINE | re.IGNORECASE
+        )
         non_empty = [s for s in found if s]
         if not non_empty:
             continue
@@ -151,7 +162,9 @@ def mark_station_as(_station: Station, _done: bool) -> bool:
     for s in _state["stations"]:
         if s == _station:
             if _done:
-                s.done_timestamp = datetime.now(tz=ZoneInfo("Europe/Berlin")).timestamp()
+                s.done_timestamp = datetime.now(
+                    tz=ZoneInfo("Europe/Berlin")
+                ).timestamp()
             else:
                 s.done_timestamp = None
             marked = True
@@ -163,11 +176,16 @@ def mark_station_as(_station: Station, _done: bool) -> bool:
 
 
 async def done(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    log = create_logger(inspect.currentframe().f_code.co_name)
+    log = create_logger_with_frame(inspect.currentframe(), __name__)
     # context.args is None when the message is not of type text (`PHOTO` in this case)
     context_args = context.args if context.args else []
 
-    text = update.effective_message.caption if update.effective_message.caption else " ".join(context_args)
+    effective_message = cast(TelegramMessage, update.effective_message)
+    text = (
+        effective_message.caption
+        if effective_message.caption
+        else " ".join(context_args)
+    )
     _station = find_station_in_caption(text)
 
     if _station:
@@ -193,8 +211,7 @@ async def progress(update: Update, _: ContextTypes.DEFAULT_TYPE):
     message_header = escape_markdown(f"{stations_done} / {stations_total}")
     message_body = []
 
-    done_stations = sorted(done_stations, key=lambda s: s.name)
-    for _station in done_stations:
+    for _station in sorted(done_stations, key=lambda s: s.name):
         message_body.append(_station.done_overview_string())
 
     msg = message_header + "\n\n" + "\n".join(message_body)
@@ -203,7 +220,7 @@ async def progress(update: Update, _: ContextTypes.DEFAULT_TYPE):
 
 
 async def set_timestamp(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    name = " ".join(context.args[:-1])
+    name = " ".join(context.args[:-1])  # type: ignore[index]
     date_format = "%d.%m.%Y"
 
     _station = find_station_in_caption(name)
@@ -211,7 +228,8 @@ async def set_timestamp(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if _station:
         if _station.done:
             try:
-                time = datetime.strptime(context.args[-1], date_format)
+                time_string = cast(str, context.args[-1])  # type: ignore[index]
+                time = datetime.strptime(time_string, date_format)
                 _station.done_timestamp = time.timestamp()
                 if update_station(_station):
                     message = f"Set `timestamp` for {_station.name} at {time}"
@@ -228,7 +246,7 @@ async def set_timestamp(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def stations(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    format_station = lambda s: escape_markdown(f"{s.name} {'(done)' if s.done else ''}")
+    format_station = lambda s: escape_markdown(f"{s.name} {'(done)' if s.done else ''}")  # noqa: E731
 
     message = "\n".join([format_station(s) for s in _state["stations"]])
     await TextMessage(message).send(update)

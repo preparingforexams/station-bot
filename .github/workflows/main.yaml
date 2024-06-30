@@ -8,22 +8,23 @@ jobs:
   validate-renovate-config:
     uses: BlindfoldedSurgery/renovate-config/.github/workflows/validate.yml@main
 
-#  lint:
-#    uses: BlindfoldedSurgery/actions-python/.github/workflows/lint.yml@v1
-#    with:
-#      python-version: '3.12'
+  lint:
+    uses: BlindfoldedSurgery/actions-python/.github/workflows/lint.yml@v2
+    with:
+      python-version: '3.12'
 
   test:
-    uses: BlindfoldedSurgery/actions-python/.github/workflows/test.yml@v1
+    uses: BlindfoldedSurgery/actions-python/.github/workflows/test.yml@v2
     with:
       python-version: '3.12'
 
   build-container-image:
     needs:
+      - lint
       - test
-    uses: BlindfoldedSurgery/actions-container/.github/workflows/build-image-docker.yml@v3
+    uses: preparingforexams/actions-container/.github/workflows/build-image-kaniko.yml@v3
     with:
-      platform: "linux/arm64"
+      runner-name-build: warp-ubuntu-latest-arm64-2x
       push-image: ${{ github.ref_name == github.event.repository.default_branch }}
 
   deploy:
@@ -36,3 +37,8 @@ jobs:
         with:
           fetch-depth: 0
       - run: git push origin main:release
+
+  clean:
+    concurrency: cleanup
+    needs: [ deploy ]
+    uses: preparingforexams/actions-container/.github/workflows/clean.yml@v3

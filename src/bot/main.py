@@ -6,11 +6,12 @@ import telegram.ext
 from telegram.ext import ApplicationBuilder, filters
 
 import bot
-from bot.logger import create_logger
+from bot.logger import create_logger_with_frame
 
 
 def get_bot_token_or_die(env_variable: str = "BOT_TOKEN"):
-    logger = create_logger(inspect.currentframe().f_code.co_name)
+    logger = create_logger_with_frame(inspect.currentframe(), __name__)
+
     if token := os.getenv(env_variable):
         return token
 
@@ -31,7 +32,9 @@ def main():
     application.add_handler(done_handler)
     progress_handler = telegram.ext.CommandHandler("progress", bot.progress)
     application.add_handler(progress_handler)
-    set_timestamp_handler = telegram.ext.CommandHandler("set_timestamp", bot.set_timestamp)
+    set_timestamp_handler = telegram.ext.CommandHandler(
+        "set_timestamp", bot.set_timestamp
+    )
     application.add_handler(set_timestamp_handler)
     stations_handler = telegram.ext.CommandHandler("stations", bot.stations)
     application.add_handler(stations_handler)

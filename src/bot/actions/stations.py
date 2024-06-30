@@ -2,13 +2,13 @@ import dataclasses
 import unicodedata
 from datetime import datetime
 from enum import Enum
-from typing import Optional, Self
-from zoneinfo import ZoneInfo
+from typing import Literal, Optional, Self, cast
 
 import requests
 from bs4 import BeautifulSoup, Tag
+from zoneinfo import ZoneInfo
 
-from bot import actions
+from bot import escape_markdown
 
 
 class StationType(Enum):
@@ -18,9 +18,9 @@ class StationType(Enum):
     @classmethod
     def from_str(cls, s: str) -> Self:
         if s.lower() == "hp" or s.lower() == StationType.HALTEPUNKT.value.lower():
-            return cls.HALTEPUNKT
+            return cls.HALTEPUNKT  # type: ignore[return-value]
 
-        return cls.BAHNHOF
+        return cls.BAHNHOF  # type: ignore[return-value]
 
     def __str__(self):
         return self.value
@@ -43,11 +43,13 @@ class StopType(Enum):
     @classmethod
     def serialize(cls, s: str) -> Self:
         if s == StopType.F.value:
-            return StopType.F
+            return cls.F  # type: ignore[return-value]
         elif s == StopType.R.value:
-            return StopType.R
+            return cls.R  # type: ignore[return-value]
         elif s == StopType.S.value:
-            return StopType.S
+            return cls.S  # type: ignore[return-value]
+
+        raise ValueError(f"Unmatched StopType: {s}")
 
     def __str__(self):
         return self.value
@@ -63,7 +65,7 @@ def format_routes(route_tag: Tag) -> str:
             link = " "
         elif not link.startswith("https://"):
             link = f"https://de.wikipedia.org{link}"
-        routes.append(f"[{actions.escape_markdown(a.text)}]({actions.escape_markdown(link)})")
+        routes.append(f"[{escape_markdown(a.text)}]({escape_markdown(link)})")
 
     return "\n".join(routes)
 
@@ -83,7 +85,7 @@ class Station:
     stop_type: StopType
     routes: str
     notes: str
-    done_timestamp: Optional[int]
+    done_timestamp: Optional[float]
     planner_link: Optional[str]
 
     def __eq__(self, other):
@@ -91,32 +93,36 @@ class Station:
 
     def done_overview_string(self) -> str:
         if self.done_timestamp:
-            s = datetime.fromtimestamp(self.done_timestamp, tz=ZoneInfo("Europe/Berlin")).strftime("%d.%m.%Y")
-            return actions.escape_markdown(f"{self.name} ({s})")
+            s = datetime.fromtimestamp(
+                self.done_timestamp, tz=ZoneInfo("Europe/Berlin")
+            ).strftime("%d.%m.%Y")
+            return escape_markdown(f"{self.name} ({s})")
         else:
-            return actions.escape_markdown(self.name)
+            return escape_markdown(self.name)
 
     def __str__(self):
         done_string = ""
         planner_link_string = ""
         if self.done_timestamp:
-            s = datetime.fromtimestamp(self.done_timestamp, tz=ZoneInfo("Europe/Berlin")).strftime("%d.%m.%Y")
-            done_string = actions.escape_markdown(f"Done: {s}")
+            s = datetime.fromtimestamp(
+                self.done_timestamp, tz=ZoneInfo("Europe/Berlin")
+            ).strftime("%d.%m.%Y")
+            done_string = escape_markdown(f"Done: {s}")
         if getattr(self, "planner_link"):
             planner_link_string = f"[DB Plan]({self.planner_link})"
 
         return rf"""
-Name: [{actions.escape_markdown(self.name)}]({self.name_link})
-Betriebsstelle: {actions.escape_markdown(str(self.type))}
+Name: [{escape_markdown(self.name)}]({self.name_link})
+Betriebsstelle: {escape_markdown(str(self.type))}
 Gleise: {self.tracks}
-Stadt: [{actions.escape_markdown(self.town)}]({self.town_link})
-Kreis: {actions.escape_markdown(self.district)}
-Eröffnung: {actions.escape_markdown(self.opening)}
-Verkehrsverbund: {actions.escape_markdown(self.transport_association)}
-Kategorie: {actions.escape_markdown(self.category)}
-Halt\-Typ: {actions.escape_markdown(str(self.stop_type))}
+Stadt: [{escape_markdown(self.town)}]({self.town_link})
+Kreis: {escape_markdown(self.district)}
+Eröffnung: {escape_markdown(self.opening)}
+Verkehrsverbund: {escape_markdown(self.transport_association)}
+Kategorie: {escape_markdown(self.category)}
+Halt\-Typ: {escape_markdown(str(self.stop_type))}
 Strecke: {self.routes}
-Anmerkungen: {actions.escape_markdown(self.notes)}
+Anmerkungen: {escape_markdown(self.notes)}
 {done_string}
 {planner_link_string}"""
 
@@ -140,7 +146,7 @@ Anmerkungen: {actions.escape_markdown(self.notes)}
 
     @classmethod
     def deserialize(cls, obj: dict) -> Self:
-        return Station(
+        return cls(
             obj["name"],
             obj["name_link"],
             StationType.from_str(obj["type"]),
@@ -182,11 +188,11 @@ Anmerkungen: {actions.escape_markdown(self.notes)}
 
 
 def get_link(t: Tag) -> str:
-    a = t.find("a")
+    a = cast(Tag, t.find("a"))
     if not a:
         return " "
 
-    link = a["href"]
+    link = cast(str, a["href"])
     cls = a.attrs.get("class", [])
     # a 'new' class marks the link as red indicating that the site does not yet exist
     if "new" in cls:
@@ -195,11 +201,17 @@ def get_link(t: Tag) -> str:
     if not link.startswith("https://"):
         link = f"https://de.wikipedia.org/{link}"
 
-    return actions.escape_markdown(link)
+    return escape_markdown(link)
 
 
-def normalize_column_strings(columns: list[Tag], unicode_form: str = "NFC") -> list[str]:
-    return [unicodedata.normalize(unicode_form, " ".join(column.strings)).strip() for column in columns]
+def normalize_column_strings(
+    columns: list[Tag],
+    unicode_form: Literal["NFC", "NFD", "NFKC", "NFKD"] = "NFC",
+) -> list[str]:
+    return [
+        unicodedata.normalize(unicode_form, " ".join(column.strings)).strip()
+        for column in columns
+    ]
 
 
 def get_station_name(t: Tag) -> str:
@@ -242,7 +254,9 @@ def get_stations() -> Optional[list[Station]]:
             opening=column_strings[5],
             transport_association=column_strings[6],
             category=column_strings[7],
-            stop_type=StopType.from_columns(column_strings[8], column_strings[9], column_strings[10]),
+            stop_type=StopType.from_columns(
+                column_strings[8], column_strings[9], column_strings[10]
+            ),
             routes=format_routes(columns[11]),
             notes=column_strings[12],
             done_timestamp=None,
