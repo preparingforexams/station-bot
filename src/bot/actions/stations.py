@@ -8,7 +8,7 @@ import requests
 from bs4 import BeautifulSoup, Tag
 from zoneinfo import ZoneInfo
 
-from bot import escape_markdown
+from bot.actions.utils import escape_markdown
 
 
 class StationType(Enum):

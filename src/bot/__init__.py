@@ -10,12 +10,12 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from zoneinfo import ZoneInfo
 
-from .actions import TextMessage
-from .actions.stations import Station, get_stations
-from .actions.utils import escape_markdown
-from .imported_stations import STATIONS
-from .logger import create_logger, create_logger_with_frame
-from .state import ConfigmapState
+from bot.actions import TextMessage
+from bot.actions.stations import Station, get_stations
+from bot.actions.utils import escape_markdown
+from bot.imported_stations import STATIONS
+from bot.logger import create_logger, create_logger_with_frame
+from bot.state import ConfigmapState
 
 try:
     config.load_incluster_config()
