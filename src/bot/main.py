@@ -15,7 +15,7 @@ def get_bot_token_or_die(env_variable: str = "BOT_TOKEN"):
     if token := os.getenv(env_variable):
         return token
 
-    logger.error(f"failed to retrieve token from environment (`{env_variable}`)")
+    logger.error("failed to retrieve token from environment (%s)", env_variable)
     sys.exit(1)
 
 

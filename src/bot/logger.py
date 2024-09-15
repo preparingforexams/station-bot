@@ -12,7 +12,7 @@ def create_logger_with_frame(frame: FrameType | None, fallback: str) -> logging.
 def create_logger(name: str, level: int = logging.DEBUG) -> logging.Logger:
     import sys
 
-    logger = logging.Logger(name)
+    logger = logging.getLogger(name)
     ch = logging.StreamHandler(sys.stdout)
 
     formatting = f"[{name}] %(asctime)s\t%(levelname)s\t%(module)s.%(funcName)s#%(lineno)d | %(message)s"

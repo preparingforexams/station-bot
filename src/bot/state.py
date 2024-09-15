@@ -83,9 +83,7 @@ class ConfigmapState(State):
         self.configmap = self.api.read_namespaced_config_map(self.name, self.namespace)
 
         if not self.configmap.data:
-            self.configmap.data = {
-                "state": base64.b64encode(b'{"stations": []}')
-            }
+            self.configmap.data = {"state": base64.b64encode(b'{"stations": []}')}
 
         decoded_value = base64.b64decode(self.configmap.data["state"]).decode("utf-8")
         state = json.loads(decoded_value)

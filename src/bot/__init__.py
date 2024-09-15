@@ -118,12 +118,12 @@ def send_telegram_error_message(message: str, *, _: Any = None):
 async def station(update: Update, _: ContextTypes.DEFAULT_TYPE):
     log = create_logger_with_frame(inspect.currentframe(), __name__)
 
-    log.debug(f"{len(_state['stations'])} are registered")
+    log.debug("%d are registered", len(_state["stations"]))
     open_stations = [_station for _station in _state["stations"] if not _station.done]
-    log.debug(f"{len(open_stations)} are available to choose from")
+    log.debug("%d are available to choose from", len(open_stations))
     # noinspection PyShadowingNames
     station: Station = random.choice(open_stations)
-    log.debug(f"{station.name}")
+    log.debug(station.name)
 
     message = TextMessage(str(station))
     return await message.send(update)
@@ -189,7 +189,7 @@ async def done(update: Update, context: ContextTypes.DEFAULT_TYPE):
     _station = find_station_in_caption(text)
 
     if _station:
-        log.debug(f"found {_station.name}")
+        log.debug("found %s", _station.name)
         if _station.done:
             message = f"{_station.name} was already marked as 'done'"
         elif mark_station_as(_station, True):

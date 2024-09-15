@@ -2,7 +2,6 @@ import dataclasses
 import time
 from abc import abstractmethod
 from enum import Enum
-from typing import List
 
 import telegram.constants
 from telegram import Update
