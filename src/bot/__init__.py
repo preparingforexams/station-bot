@@ -3,12 +3,12 @@ import random
 import re
 from datetime import datetime
 from typing import Any, cast
+from zoneinfo import ZoneInfo
 
 from kubernetes import client, config
 from telegram import Message as TelegramMessage
 from telegram import Update
 from telegram.ext import ContextTypes
-from zoneinfo import ZoneInfo
 
 from bot.actions import TextMessage
 from bot.actions.stations import Station, get_stations

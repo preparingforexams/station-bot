@@ -2,11 +2,11 @@ import dataclasses
 import unicodedata
 from datetime import datetime
 from enum import Enum
-from typing import Literal, Optional, Self, cast
+from typing import Literal, Self, cast
+from zoneinfo import ZoneInfo
 
 import requests
 from bs4 import BeautifulSoup, Tag
-from zoneinfo import ZoneInfo
 
 from bot.actions.utils import escape_markdown
 
@@ -75,7 +75,7 @@ class Station:
     name: str
     name_link: str
     type: StationType
-    tracks: Optional[int]
+    tracks: int | None
     town: str
     town_link: str
     district: str
@@ -85,8 +85,8 @@ class Station:
     stop_type: StopType
     routes: str
     notes: str
-    done_timestamp: Optional[float]
-    planner_link: Optional[str]
+    done_timestamp: float | None
+    planner_link: str | None
 
     def __eq__(self, other):
         return other.name == self.name
@@ -224,7 +224,7 @@ def get_station_name(t: Tag) -> str:
     return "".join(strings)
 
 
-def get_stations() -> Optional[list[Station]]:
+def get_stations() -> list[Station] | None:
     response = requests.get(
         "https://de.wikipedia.org/wiki/Liste_der_Personenbahnh%C3%B6fe_in_Schleswig-Holstein"
     )

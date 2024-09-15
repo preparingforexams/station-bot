@@ -1,7 +1,7 @@
 import base64
 import json
 import os
-from typing import Any, Optional
+from typing import Any
 
 import kubernetes.client
 from kubernetes import client
@@ -51,7 +51,7 @@ class ConfigmapState(State):
             raise ValueError(
                 "`CONFIGMAP_NAME` and `CONFIGMAP_NAMESPACE` have to be defined"
             )
-        self.configmap: Optional[V1ConfigMap] = None
+        self.configmap: V1ConfigMap | None = None
         super().__init__(state)
 
     def initialize(self):
@@ -84,7 +84,7 @@ class ConfigmapState(State):
 
         if not self.configmap.data:
             self.configmap.data = {
-                "state": base64.b64encode('{"stations": []}'.encode("utf-8"))
+                "state": base64.b64encode(b'{"stations": []}')
             }
 
         decoded_value = base64.b64decode(self.configmap.data["state"]).decode("utf-8")
