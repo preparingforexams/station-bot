@@ -4,8 +4,6 @@ deployment:
   name: stationbot
   image: ghcr.io/preparingforexams/station-bot
   imagePullPolicy: IfNotPresent
-  revisionHistoryLimit: 1
-  replicas: 1
   labels:
     app: stationbot
   limits:

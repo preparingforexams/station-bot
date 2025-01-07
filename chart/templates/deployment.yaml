@@ -3,8 +3,8 @@ kind: Deployment
 metadata:
   name: {{ .Values.deployment.name }}
 spec:
-  revisionHistoryLimit: {{ .Values.deployment.revisionHistoryLimit }}
-  replicas: {{ .Values.deployment.replicas }}
+  revisionHistoryLimit: 0
+  replicas: 1
   strategy:
     type: {{ .Values.deployment.updateStrategy }}
   selector:
@@ -20,6 +20,10 @@ spec:
         {{- end }}
     spec:
       serviceAccountName: {{ .Values.serviceaccount.name }}
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: {{ .Values.deployment.name }}
           image: {{ .Values.deployment.image }}:{{ .Values.appVersion }}
@@ -29,6 +33,10 @@ spec:
                 name: {{ .Values.secret.name }}
             - configMapRef:
                 name: {{ .Values.configmap.name }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
           resources:
             limits:
               cpu: {{ .Values.deployment.limits.cpu }}
