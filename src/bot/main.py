@@ -9,7 +9,7 @@ import bot
 from bot.logger import create_logger_with_frame
 
 
-def get_bot_token_or_die(env_variable: str = "BOT_TOKEN"):
+def get_bot_token_or_die(env_variable: str = "TELEGRAM_TOKEN"):
     logger = create_logger_with_frame(inspect.currentframe(), __name__)
 
     if token := os.getenv(env_variable):
