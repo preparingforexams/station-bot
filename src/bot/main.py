@@ -1,6 +1,7 @@
 import asyncio
 import inspect
 import os
+import signal
 import sys
 
 import telegram.ext
@@ -43,7 +44,12 @@ def main():
     stations_handler = telegram.ext.CommandHandler("stations", bot.stations)
     application.add_handler(stations_handler)
 
-    application.run_polling()
+    application.run_polling(
+        stop_signals=[
+            signal.SIGINT,
+            signal.SIGTERM,
+        ]
+    )
 
 
 if __name__ == "__main__":
