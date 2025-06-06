@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Literal, Self, cast
 from zoneinfo import ZoneInfo
 
-import requests
+import httpx
 from bs4 import BeautifulSoup, Tag
 
 from bot.actions.utils import escape_markdown
@@ -225,10 +225,10 @@ def get_station_name(t: Tag) -> str:
 
 
 def get_stations() -> list[Station] | None:
-    response = requests.get(
+    response = httpx.get(
         "https://de.wikipedia.org/wiki/Liste_der_Personenbahnh%C3%B6fe_in_Schleswig-Holstein"
     )
-    if not response.ok:
+    if not response.is_success:
         return None
 
     soup = BeautifulSoup(response.text, "html.parser")
