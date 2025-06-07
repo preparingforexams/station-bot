@@ -1,3 +1,4 @@
+import logging
 import random
 import re
 from datetime import datetime
@@ -14,6 +15,8 @@ from bot.actions.stations import Station, get_stations
 from bot.actions.utils import escape_markdown
 from bot.imported_stations import STATIONS
 from bot.state import ConfigmapState
+
+_logger = logging.getLogger(__name__)
 
 try:
     config.load_incluster_config()

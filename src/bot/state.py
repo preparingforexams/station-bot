@@ -7,7 +7,7 @@ import kubernetes.client
 from kubernetes import client
 from kubernetes.client import V1ConfigMap
 
-from bot import Station
+from bot.actions.stations import Station
 
 
 class State:
