@@ -8,8 +8,6 @@ import telegram.ext
 import uvloop
 from telegram.ext import ApplicationBuilder, filters
 
-import bot
-
 _logger = logging.getLogger(__name__)
 
 
@@ -30,6 +28,8 @@ def get_bot_token_or_die(env_variable: str = "TELEGRAM_TOKEN"):
 def main():
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     _setup_logging()
+
+    from bot import bot
 
     bot_token = get_bot_token_or_die()
     application = ApplicationBuilder().token(bot_token).build()
