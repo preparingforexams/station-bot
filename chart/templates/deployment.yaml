@@ -33,6 +33,19 @@ spec:
                 name: {{ .Values.secret.name }}
             - configMapRef:
                 name: {{ .Values.configmap.name }}
+          env:
+            - name: STATE_REDIS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: username
+            - name: STATE_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: password
+            - name: STATE_REDIS_HOST
+              value: "redis.prep-redis-state"
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
