@@ -15,7 +15,8 @@ _logger = logging.getLogger(__name__)
 
 def _setup_logging():
     logging.basicConfig()
-    _logger.root.level = logging.DEBUG
+    _logger.root.level = logging.WARNING
+    logging.getLogger(__package__).level = logging.DEBUG
 
 
 def get_bot_token_or_die(env_variable: str = "TELEGRAM_TOKEN"):
