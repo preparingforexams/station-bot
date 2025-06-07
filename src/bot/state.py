@@ -1,14 +1,24 @@
 import base64
 import json
 import os
-from typing import Any
+from typing import Any, Self
 
 import kubernetes.client
 from kubernetes import client
 from kubernetes.client import V1ConfigMap
+from pydantic import BaseModel
 
 from bot.actions.stations import Station
 
+
+class CleanState(BaseModel):
+    pass
+
+    @classmethod
+    def initial_state(cls) ->Self:
+        return cls(
+
+        )
 
 class State:
     def __init__(self, initial_state: dict[str, Any]):
