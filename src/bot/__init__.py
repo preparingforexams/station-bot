@@ -1,8 +1,8 @@
-import inspect
+import logging
 import random
 import re
 from datetime import datetime
-from typing import Any, cast
+from typing import cast
 from zoneinfo import ZoneInfo
 
 from kubernetes import client, config
@@ -14,8 +14,9 @@ from bot.actions import TextMessage
 from bot.actions.stations import Station, get_stations
 from bot.actions.utils import escape_markdown
 from bot.imported_stations import STATIONS
-from bot.logger import create_logger, create_logger_with_frame
 from bot.state import ConfigmapState
+
+_logger = logging.getLogger(__package__)
 
 try:
     config.load_incluster_config()
@@ -73,8 +74,7 @@ def get_station(
 
 
 def update_stations():
-    log = create_logger_with_frame(inspect.currentframe(), __name__)
-    log.debug("updating stations")
+    _logger.debug("updating stations")
 
     upstream_stations = get_stations()
     current_stations: list[Station] = _state["stations"]
@@ -97,33 +97,23 @@ def update_stations():
         updated.append(Station.deserialize(s))
     _state["stations"] = updated
     _state.write()
-    log.debug("finished updating stations")
+    _logger.debug("finished updating stations")
 
 
 # noinspection PyBroadException
 try:
     update_stations()
 except Exception:
-    create_logger("update_stations").error(
-        "failed to update stations, continuing", exc_info=True
-    )
-
-
-def send_telegram_error_message(message: str, *, _: Any = None):
-    log = create_logger_with_frame(inspect.currentframe(), __name__)
-
-    log.error(message)
+    _logger.exception("failed to update stations, continuing")
 
 
 async def station(update: Update, _: ContextTypes.DEFAULT_TYPE):
-    log = create_logger_with_frame(inspect.currentframe(), __name__)
-
-    log.debug("%d are registered", len(_state["stations"]))
+    _logger.debug("%d are registered", len(_state["stations"]))
     open_stations = [_station for _station in _state["stations"] if not _station.done]
-    log.debug("%d are available to choose from", len(open_stations))
+    _logger.debug("%d are available to choose from", len(open_stations))
     # noinspection PyShadowingNames
     station: Station = random.choice(open_stations)
-    log.debug(station.name)
+    _logger.debug(station.name)
 
     message = TextMessage(str(station))
     return await message.send(update)
@@ -176,7 +166,6 @@ def mark_station_as(_station: Station, _done: bool) -> bool:
 
 
 async def done(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    log = create_logger_with_frame(inspect.currentframe(), __name__)
     # context.args is None when the message is not of type text (`PHOTO` in this case)
     context_args = context.args if context.args else []
 
@@ -189,7 +178,7 @@ async def done(update: Update, context: ContextTypes.DEFAULT_TYPE):
     _station = find_station_in_caption(text)
 
     if _station:
-        log.debug("found %s", _station.name)
+        _logger.debug("found %s", _station.name)
         if _station.done:
             message = f"{_station.name} was already marked as 'done'"
         elif mark_station_as(_station, True):
