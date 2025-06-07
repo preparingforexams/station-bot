@@ -1,61 +1,64 @@
 import asyncio
 import logging
-import os
-import signal
-import sys
 
-import telegram.ext
+import sentry_sdk
 import uvloop
-from telegram.ext import ApplicationBuilder, filters
+from bs_config import Env
+
+from bot.bot import StationBot
+from bot.config import Config
+from bot.state import StateStorageFactory
 
 _logger = logging.getLogger(__name__)
 
 
-def _setup_logging():
+def _setup_logging() -> None:
     logging.basicConfig()
     _logger.root.level = logging.WARNING
     logging.getLogger(__package__).level = logging.DEBUG
 
 
-def get_bot_token_or_die(env_variable: str = "TELEGRAM_TOKEN"):
-    if token := os.getenv(env_variable):
-        return token
+def _setup_sentry(config: Config) -> None:
+    dsn = config.sentry_dsn
+    if dsn is None:
+        _logger.warning("Sentry DSN not configured")
+        return
 
-    _logger.error("failed to retrieve token from environment (%s)", env_variable)
-    sys.exit(1)
+    sentry_sdk.init(
+        dsn=dsn,
+        release=config.app_version,
+    )
+
+
+def _create_state_storage_factory(config: Config) -> StateStorageFactory:
+    state_config = config.state
+    if state_config is None:
+        from bs_state.implementation import memory_storage
+
+        return lambda initial: memory_storage.load(initial_state=initial)
+
+    from bs_state.implementation import redis_storage
+
+    return lambda initial: redis_storage.load(
+        initial_state=initial,
+        host=state_config.redis_host,
+        username=state_config.redis_username,
+        password=state_config.redis_password,
+        key=state_config.redis_key,
+    )
 
 
 def main():
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     _setup_logging()
 
-    from bot import bot
+    env = Env.load(include_default_dotenv=True)
+    config = Config.from_env(env)
 
-    bot_token = get_bot_token_or_die()
-    application = ApplicationBuilder().token(bot_token).build()
+    _setup_sentry(config)
 
-    station_handler = telegram.ext.CommandHandler("station", bot.station)
-    application.add_handler(station_handler)
-
-    done_handler = telegram.ext.MessageHandler(filters.PHOTO, bot.done)
-    application.add_handler(done_handler)
-    done_handler = telegram.ext.CommandHandler("done", bot.done)
-    application.add_handler(done_handler)
-    progress_handler = telegram.ext.CommandHandler("progress", bot.progress)
-    application.add_handler(progress_handler)
-    set_timestamp_handler = telegram.ext.CommandHandler(
-        "set_timestamp", bot.set_timestamp
-    )
-    application.add_handler(set_timestamp_handler)
-    stations_handler = telegram.ext.CommandHandler("stations", bot.stations)
-    application.add_handler(stations_handler)
-
-    application.run_polling(
-        stop_signals=[
-            signal.SIGINT,
-            signal.SIGTERM,
-        ]
-    )
+    state_storage_factory = _create_state_storage_factory(config)
+    StationBot.run(config, state_storage_factory)
 
 
 if __name__ == "__main__":
