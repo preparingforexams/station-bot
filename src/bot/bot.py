@@ -350,7 +350,9 @@ class StationBot:
             processor=default_process,
         )
 
-        if ratio > 0.95:
+        _logger.info("Query %s returned match %s with ratio %f", query, result, ratio)
+
+        if ratio > 0.98:
             return result
 
         raise FuzzyMatchingException(result.name, ratio)
