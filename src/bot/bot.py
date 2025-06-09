@@ -356,7 +356,7 @@ class StationBot:
             "Query returned match %s with ratio %f: %s", result.name, ratio, query
         )
 
-        if ratio > 98:
+        if ratio > 95:
             return result
 
         raise FuzzyMatchingException(result.name, ratio)
