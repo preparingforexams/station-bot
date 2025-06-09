@@ -39,7 +39,7 @@ class FuzzyMatchingException(Exception):
         self.match_ratio = match_ratio
 
         super().__init__(
-            f"No match found, closest match: {closest_match} ({round(match_ratio * 100)}%)",
+            f"No match found, closest match: {closest_match} ({round(match_ratio, 1)}%)",
         )
 
 
@@ -354,7 +354,7 @@ class StationBot:
 
         _logger.info("Query %s returned match %s with ratio %f", query, result, ratio)
 
-        if ratio > 0.98:
+        if ratio > 98:
             return result
 
         raise FuzzyMatchingException(result.name, ratio)
