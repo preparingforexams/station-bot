@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ .Values.configmap.name }}
-data:
-  CONFIGMAP_NAME: "{{ .Values.configmap.state.name }}"
-  CONFIGMAP_NAMESPACE: "{{ .Release.Namespace }}"

@@ -2,9 +2,7 @@ import logging
 import random
 import signal
 from collections.abc import Iterable
-from datetime import datetime
 from io import StringIO
-from typing import Any
 from zoneinfo import ZoneInfo
 
 from bs_state import StateStorage
@@ -21,7 +19,7 @@ from telegram.ext import (
     filters,
 )
 
-from bot import legacy_state, wiki
+from bot import wiki
 from bot.config import Config
 from bot.imported_stations import IMPORTED_STATIONS
 from bot.model import Station
@@ -67,42 +65,6 @@ class StationBot:
         await self._state_storage.store(new_state)
 
         _logger.info("Initialization complete")
-
-        # await self.__restore_legacy_state(new_state)
-
-    async def __restore_legacy_state(self, state: StationState) -> None:
-        _logger.info("Trying to restore done timestamps from legacy state")
-        restored_state = await legacy_state.read_legacy_state()
-        if restored_state:
-            _logger.info("Found legacy state: %s", restored_state)
-            restored_stations: list[dict[str, Any]] = restored_state.get("stations", [])
-
-            for restored_station in restored_stations:
-                name = restored_station["name"]
-                done_timestamp = restored_station.get("done_timestamp")
-                if not done_timestamp:
-                    _logger.info("No done time for station %s", name)
-                    continue
-
-                matching_station: Station | None = None
-                for station in state.stations:
-                    if station.name == name:
-                        matching_station = station
-                        break
-
-                if matching_station is None:
-                    _logger.error("Could not find station for legacy station %s", name)
-                    continue
-
-                done_datetime = datetime.fromtimestamp(
-                    done_timestamp,
-                    tz=ZoneInfo("Europe/Berlin"),
-                )
-                _logger.info("Found done time for station %s", name)
-                state = state.mark_as_done(matching_station, done_datetime.date())
-
-            _logger.info("Saving restored state")
-            await self._state_storage.store(state)
 
     async def __post_shutdown(self, _) -> None:
         _logger.info("Shutting down...")

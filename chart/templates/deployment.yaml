@@ -19,7 +19,7 @@ spec:
         {{ $k }}: {{ $v }}
         {{- end }}
     spec:
-      serviceAccountName: {{ .Values.serviceaccount.name }}
+      serviceAccountName: {{ .Release.Name }}
       securityContext:
         runAsNonRoot: true
         seccompProfile:
@@ -31,8 +31,6 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ .Values.secret.name }}
-            - configMapRef:
-                name: {{ .Values.configmap.name }}
           env:
             - name: STATE_REDIS_USERNAME
               valueFrom:
