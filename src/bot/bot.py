@@ -66,7 +66,7 @@ class StationBot:
         new_state = state.update_stations(IMPORTED_STATIONS).update_stations(stations)
         await self._state_storage.store(new_state)
 
-        await self.__restore_legacy_state(new_state)
+        # await self.__restore_legacy_state(new_state)
 
     async def __restore_legacy_state(self, state: StationState) -> None:
         _logger.info("Trying to restore done timestamps from legacy state")
