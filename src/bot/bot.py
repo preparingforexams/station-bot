@@ -238,7 +238,11 @@ class StationBot:
 
         station_list = "\n".join(visited)
         reply = f"{len(visited)} / {len(state.stations)}\n\n{station_list}"
-        await message.reply_text(reply, parse_mode=ParseMode.HTML)
+        await message.reply_text(
+            reply,
+            parse_mode=ParseMode.HTML,
+            link_preview_options=LinkPreviewOptions(is_disabled=True),
+        )
 
     async def _command_station(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
