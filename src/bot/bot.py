@@ -228,14 +228,13 @@ class StationBot:
         state = await self._state_storage.load()
 
         visited = []
-        for station in state.stations:
+        for station in sorted(state.stations, key=lambda s: s.name):
             done_at = state.done_date_by_station_name.get(station.name)
             if not done_at:
                 continue
 
             link = self._format_link(station.name, station.name_link)
             visited.append(f"{link} ({done_at.strftime(DATE_FORMAT)})")
-        visited.sort()
 
         station_list = "\n".join(visited)
         reply = f"{len(visited)} / {len(state.stations)}\n\n{station_list}"
