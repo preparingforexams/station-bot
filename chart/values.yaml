@@ -11,6 +11,14 @@ deployment:
     memory: 265Mi
   updateStrategy: Recreate
 
+resources:
+  limits:
+    cpu: "1"
+    memory: 256Mi
+  requests:
+    cpu: "1"
+    memory: 256Mi
+
 secret:
   name: station-bot
 

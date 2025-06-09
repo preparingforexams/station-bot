@@ -50,7 +50,4 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: [ALL]
-          resources:
-            limits:
-              cpu: {{ .Values.deployment.limits.cpu }}
-              memory: {{ .Values.deployment.limits.memory }}
+          resources: {{ $.Values.resources | toJson }}
