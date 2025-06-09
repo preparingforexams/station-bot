@@ -11,7 +11,7 @@ from bs_state import StateStorage
 from pydantic import HttpUrl
 from rapidfuzz import process
 from rapidfuzz.utils_py import default_process
-from telegram import LinkPreviewOptions, Update
+from telegram import LinkPreviewOptions, Update, constants
 from telegram.constants import ParseMode
 from telegram.ext import (
     ApplicationBuilder,
@@ -240,11 +240,34 @@ class StationBot:
 
         station_list = "\n".join(visited)
         reply = f"{len(visited)} / {len(state.stations)}\n\n{station_list}"
-        await message.reply_text(
-            reply,
-            parse_mode=ParseMode.HTML,
-            link_preview_options=LinkPreviewOptions(is_disabled=True),
-        )
+
+        should_reply = True
+
+        async def __send_message(text: str) -> None:
+            link_preview_options = LinkPreviewOptions(is_disabled=True)
+            if should_reply:
+                await message.reply_text(
+                    text,
+                    parse_mode=ParseMode.HTML,
+                    link_preview_options=link_preview_options,
+                )
+            else:
+                await message.chat.send_message(
+                    text,
+                    parse_mode=ParseMode.HTML,
+                    link_preview_options=link_preview_options,
+                )
+
+        while len(reply) > constants.MessageLimit.MAX_TEXT_LENGTH:
+            _logger.info("Splitting message up...")
+            split_index = reply[: constants.MessageLimit.MAX_TEXT_LENGTH].rindex("\n")
+            part = reply[split_index + 1 :]
+            reply = reply[:split_index]
+            await __send_message(part)
+            should_reply = False
+
+        if reply:
+            await __send_message(reply)
 
     async def _command_station(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
