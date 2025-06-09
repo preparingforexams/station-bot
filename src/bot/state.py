@@ -63,3 +63,14 @@ class StationState(BaseModel):
             stations=self.stations,
             done_date_by_station_name=done_date_by_station_name,
         )
+
+    def mark_undone(self, station_name: str) -> Self:
+        done_date_by_station_name = dict(self.done_date_by_station_name)
+        if station_name not in done_date_by_station_name:
+            raise ValueError("Station wasn't done")
+
+        del done_date_by_station_name[station_name]
+        return StationState(  # type: ignore[return-value]
+            stations=self.stations,
+            done_date_by_station_name=done_date_by_station_name,
+        )
