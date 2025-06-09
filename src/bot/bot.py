@@ -104,7 +104,11 @@ class StationBot:
 
     async def __post_shutdown(self, _) -> None:
         _logger.info("Shutting down...")
-        await self._state_storage.close()
+        state_storage = self._state_storage
+        if state_storage is None:
+            _logger.error("State storage was not initialized")
+        else:
+            await self._state_storage.close()
 
         _logger.info("Shutdown complete.")
 
