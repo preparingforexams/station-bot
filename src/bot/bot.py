@@ -352,7 +352,9 @@ class StationBot:
             processor=default_process,
         )
 
-        _logger.info("Query %s returned match %s with ratio %f", query, result, ratio)
+        _logger.info(
+            "Query returned match %s with ratio %f: %s", result.name, ratio, query
+        )
 
         if ratio > 98:
             return result
