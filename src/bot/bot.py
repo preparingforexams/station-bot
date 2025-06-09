@@ -50,12 +50,11 @@ class StationBot:
         state_storage_factory: StateStorageFactory,
     ) -> None:
         self._state_storage_factory = state_storage_factory
+        self._state_storage: StateStorage[StationState] = None  # type: ignore[assignment]
 
     async def __post_init(self, _) -> None:
         _logger.info("Initializing...")
-        self._state_storage: StateStorage[
-            StationState
-        ] = await self._state_storage_factory(StationState.empty())
+        self._state_storage = await self._state_storage_factory(StationState.empty())
 
         _logger.info("Trying to update stations from Wikipedia")
         stations = await wiki.get_wiki_stations()
@@ -130,7 +129,12 @@ class StationBot:
                 filters=~filters.UpdateType.EDITED_MESSAGE,
             )
         )
-        app.add_handler(MessageHandler(filters.PHOTO, bot._command_done))
+        app.add_handler(
+            MessageHandler(
+                filters.PHOTO,
+                bot._command_done,
+            )
+        )
         app.add_handler(
             CommandHandler(
                 "progress",
