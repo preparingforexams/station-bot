@@ -261,8 +261,8 @@ class StationBot:
         while len(reply) > constants.MessageLimit.MAX_TEXT_LENGTH:
             _logger.info("Splitting message up...")
             split_index = reply[: constants.MessageLimit.MAX_TEXT_LENGTH].rindex("\n")
-            part = reply[split_index + 1 :]
-            reply = reply[:split_index]
+            part = reply[:split_index]
+            reply = reply[split_index + 1 :]
             await __send_message(part)
             should_reply = False
 
