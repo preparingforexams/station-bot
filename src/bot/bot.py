@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from io import StringIO
 from zoneinfo import ZoneInfo
 
+from bs_nats_updater import create_updater
 from bs_state import StateStorage
 from pydantic import HttpUrl
 from rapidfuzz import process
@@ -84,7 +85,7 @@ class StationBot:
 
         app = (
             ApplicationBuilder()
-            .token(config.telegram_token)
+            .updater(create_updater(config.telegram_token, config.nats))
             .post_init(bot.__post_init)
             .post_shutdown(bot.__post_shutdown)
             .build()

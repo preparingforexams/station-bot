@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Self
 
 from bs_config import Env
+from bs_nats_updater import NatsConfig
 
 
 @dataclass
@@ -30,6 +31,7 @@ class StateConfig:
 @dataclass
 class Config:
     app_version: str
+    nats: NatsConfig
     sentry_dsn: str | None
     state: StateConfig | None
     telegram_token: str
@@ -38,6 +40,7 @@ class Config:
     def from_env(cls, env: Env) -> Self:
         return cls(
             app_version=env.get_string("APP_VERSION", default="dev"),
+            nats=NatsConfig.from_env(env.scoped("NATS_")),
             sentry_dsn=env.get_string("SENTRY_DSN"),
             state=StateConfig.from_env(env.scoped("STATE_")),
             telegram_token=env.get_string("TELEGRAM_TOKEN", required=True),
