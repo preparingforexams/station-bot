@@ -1,5 +1,7 @@
 import logging
 import unicodedata
+from collections.abc import Iterable
+from typing import overload
 
 import httpx
 from bs4 import BeautifulSoup, Tag
@@ -50,27 +52,62 @@ class _StationParser:
             _logger.error("Encountered row with too few columns: %s", row)
             return None
 
+        tracks_str = self._normalize_blank_string(columns[2].string)
+
         return Station(
             name=self._get_station_name(columns[0]),
             name_link=self._get_link(columns[0]),
             type=self._parse_type(columns[1]),
-            tracks=int(columns[2].string) if columns[2].string else None,
-            town=self._normalize_unicode_string(" ".join(columns[3].strings) or None),
+            tracks=int(tracks_str) if tracks_str else None,
+            town=self._normalize_unicode_string(
+                " ".join(self._filter_blank_strings(columns[3].strings)) or None
+            ),
             town_link=self._get_link(columns[3]),
-            district=columns[4].string,  # type: ignore
+            district=self._normalize_blank_string(columns[4].string),  # type: ignore
             opening=self._parse_opening_date(columns[5]),
-            transport_association=columns[6].string or None,
-            category=columns[7].string or None,
+            transport_association=self._normalize_blank_string(columns[6].string),
+            category=self._normalize_blank_string(columns[7].string),
             stop_types=frozenset(
                 StopType.from_columns(
-                    columns[8].string,
-                    columns[9].string,
-                    columns[10].string,
+                    self._normalize_blank_string(columns[8].string),
+                    self._normalize_blank_string(columns[9].string),
+                    self._normalize_blank_string(columns[10].string),
                 )
             ),
             routes=self._parse_routes(columns[11]),
-            notes=self._normalize_unicode_string(" ".join(columns[12].strings)),
+            notes=self._normalize_unicode_string(
+                " ".join(self._filter_blank_strings(columns[12].strings))
+            ),
         )
+
+    def _filter_blank_strings(self, strings: Iterable[str | None]) -> Iterable[str]:
+        for string in strings:
+            if string is None:
+                continue
+
+            if stripped := string.strip():
+                yield stripped
+
+    @overload
+    def _normalize_blank_string(self, s: str | None, default: str) -> str:
+        pass
+
+    @overload
+    def _normalize_blank_string(
+        self, s: str | None, default: str | None = None
+    ) -> str | None:
+        pass
+
+    def _normalize_blank_string(
+        self, s: str | None, default: str | None = None
+    ) -> str | None:
+        if s is None:
+            return default
+
+        if stripped := s.strip():
+            return stripped
+
+        return default
 
     def _parse_type(self, tag: Tag) -> StationType:
         text = tag.string

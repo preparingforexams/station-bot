@@ -47,11 +47,11 @@ class TestGetStations:
 
         # Check that we have different types of stations
         station_types = {s.type for s in stations}
-        assert len(station_types) >= 1
+        assert len(station_types) >= 2
 
         # Check that we have different stop types
         stop_types = {t for s in stations for t in s.stop_types}
-        assert len(stop_types) >= 1
+        assert len(stop_types) >= 3
 
         # Verify that tracks can be None or integer
         tracks_values = {s.tracks for s in stations}

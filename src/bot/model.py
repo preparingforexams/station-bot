@@ -30,7 +30,7 @@ class StopType(str, Enum):
         result = set()
         if f_column:
             if f_column != "F":
-                raise ValueError(f"Invalid value for F column: {f_column}")
+                raise ValueError(f"Invalid value for F column: '{f_column}'")
             result.add(cls.F)
 
         if r_column:
