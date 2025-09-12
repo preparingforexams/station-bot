@@ -4,7 +4,6 @@ metadata:
   name: {{ .Values.deployment.name }}
 spec:
   revisionHistoryLimit: 0
-  replicas: 1
   strategy:
     type: {{ .Values.deployment.updateStrategy }}
   selector:
@@ -49,3 +48,20 @@ spec:
             capabilities:
               drop: [ALL]
           resources: {{ $.Values.resources | toJson }}
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ .Values.deployment.name }}
+spec:
+  maxReplicaCount: 1
+  minReplicaCount: 0
+  scaleTargetRef:
+    name: {{ .Values.deployment.name }}
+  triggers:
+    - type: nats-jetstream
+      metadata:
+        natsServerMonitoringEndpoint: "nats-headless.nats-system.svc.cluster.local:8222"
+        account: "$G"
+        stream: "telegram-updates"
+        consumer: "station-bot"
