@@ -15,7 +15,7 @@ dependencies = [
     "bs-nats-updater ==2.0.7",
     "bs-state [redis] ==2.3.*",
     "httpx ==0.28.*",
-    "python-telegram-bot ==22.4",
+    "python-telegram-bot ==22.5",
     "rapidfuzz>=3.13.0",
     "sentry-sdk ==2.39.*",
     "uvloop ==0.21.*",
