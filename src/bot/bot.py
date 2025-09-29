@@ -335,11 +335,15 @@ class StationBot:
 
     @staticmethod
     def _find_best_station_match(stations: Iterable[Station], query: str) -> Station:
-        _, ratio, result = process.extractOne(
+        match = process.extractOne(
             query,
             {station: station.name for station in stations},
             processor=default_process,
         )
+        if match is None:
+            raise ValueError("could not match station")
+
+        _, ratio, result = match
 
         _logger.info(
             "Query returned match %s with ratio %f: %s", result.name, ratio, query
