@@ -39,9 +39,9 @@ class Config:
     @classmethod
     def from_env(cls, env: Env) -> Self:
         return cls(
-            app_version=env.get_string("APP_VERSION", default="dev"),
-            nats=NatsConfig.from_env(env.scoped("NATS_")),
-            sentry_dsn=env.get_string("SENTRY_DSN"),
-            state=StateConfig.from_env(env.scoped("STATE_")),
-            telegram_token=env.get_string("TELEGRAM_TOKEN", required=True),
+            app_version=env.get_string("app-version", default="dev"),
+            nats=NatsConfig.from_env(env / "nats"),
+            sentry_dsn=env.get_string("sentry-dsn"),
+            state=StateConfig.from_env(env / "state"),
+            telegram_token=env.get_string("telegram-token", required=True),
         )

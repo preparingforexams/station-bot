@@ -31,17 +31,17 @@ spec:
             - secretRef:
                 name: {{ .Values.secret.name }}
           env:
-            - name: STATE_REDIS_USERNAME
+            - name: STATE__REDIS_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: redis-credentials
                   key: username
-            - name: STATE_REDIS_PASSWORD
+            - name: STATE__REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: redis-credentials
                   key: password
-            - name: STATE_REDIS_HOST
+            - name: STATE__REDIS_HOST
               value: "redis.prep-redis-state"
           securityContext:
             allowPrivilegeEscalation: false
