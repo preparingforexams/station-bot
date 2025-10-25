@@ -1,11 +1,14 @@
+import logging
 from dataclasses import dataclass
 from typing import Self
 
 from bs_config import Env
 from bs_nats_updater import NatsConfig
 
+_logger = logging.getLogger(__name__)
 
-@dataclass
+
+@dataclass(frozen=True, kw_only=True)
 class StateConfig:
     redis_host: str
     redis_username: str
@@ -17,18 +20,20 @@ class StateConfig:
 
     @classmethod
     def from_env(cls, env: Env) -> Self | None:
-        host = env.get_string("REDIS_HOST")
+        redis = env / "redis"
+        host = redis.get_string("host")
         if host is None:
+            _logger.warning("State not configured")
             return None
 
         return cls(
             redis_host=host,
-            redis_username=env.get_string("REDIS_USERNAME", required=True),
-            redis_password=env.get_string("REDIS_PASSWORD", required=True),
+            redis_username=redis.get_string("username", required=True),
+            redis_password=redis.get_string("password", required=True),
         )
 
 
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class Config:
     app_version: str
     nats: NatsConfig
