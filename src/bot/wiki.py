@@ -1,8 +1,7 @@
 import asyncio
 import logging
 import unicodedata
-from collections.abc import Iterable
-from typing import overload
+from typing import TYPE_CHECKING, overload
 from urllib.robotparser import RobotFileParser
 
 import httpx
@@ -12,8 +11,12 @@ from pydantic import (
     HttpUrl,
 )
 
-from bot.config import UserAgentConfig
 from bot.model import Route, Station, StationType, StopType
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from bot.config import UserAgentConfig
 
 _logger = logging.getLogger(__name__)
 
