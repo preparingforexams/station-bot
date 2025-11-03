@@ -52,7 +52,7 @@ def _create_state_storage_factory(config: Config) -> StateStorageFactory:
 
 
 def main():
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    asyncio.set_event_loop(uvloop.new_event_loop())
     _setup_logging()
 
     env = Env.load(include_default_dotenv=True)
