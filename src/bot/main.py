@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import TYPE_CHECKING
 
 import sentry_sdk
 import uvloop
@@ -7,7 +8,9 @@ from bs_config import Env
 
 from bot.bot import StationBot
 from bot.config import Config
-from bot.state import StateStorageFactory
+
+if TYPE_CHECKING:
+    from bot.state import StateStorageFactory
 
 _logger = logging.getLogger(__name__)
 

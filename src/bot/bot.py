@@ -1,13 +1,11 @@
 import logging
 import random
 import signal
-from collections.abc import Iterable
 from io import StringIO
 from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
 from bs_nats_updater import create_updater
-from pydantic import HttpUrl
 from rapidfuzz import process
 from rapidfuzz.utils_py import default_process
 from telegram import LinkPreviewOptions, Update, constants
@@ -20,14 +18,18 @@ from telegram.ext import (
     filters,
 )
 
-from bot.config import Config
 from bot.imported_stations import IMPORTED_STATIONS
-from bot.model import Station
 from bot.state import StateStorageFactory, StationState
 from bot.wiki import WikipediaClient
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from bs_state import StateStorage
+    from pydantic import HttpUrl
+
+    from bot.config import Config
+    from bot.model import Station
 
 _logger = logging.getLogger(__name__)
 
