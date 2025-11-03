@@ -1,7 +1,9 @@
+import asyncio
 import logging
 import unicodedata
 from collections.abc import Iterable
 from typing import overload
+from urllib.robotparser import RobotFileParser
 
 import httpx
 from bs4 import BeautifulSoup, Tag
@@ -174,9 +176,52 @@ class _StationParser:
         return "".join(strings)
 
 
+class _RobotInfo:
+    def __init__(
+        self,
+        *,
+        base_url: str,
+        parser: RobotFileParser,
+        user_agent: str,
+    ) -> None:
+        self._base_url = base_url
+        self._parser = parser
+        self._user_agent = user_agent
+
+    def can_request(self, url_path: str) -> bool:
+        return self._parser.can_fetch(
+            self._user_agent,
+            f"{self._base_url}{url_path}",
+        )
+
+
 class WikipediaClient:
     def __init__(self, config: UserAgentConfig) -> None:
+        self._base_url = "https://de.wikipedia.org"
         self._user_agent = config.build_header_value()
+        self._robots_lock = asyncio.Lock()
+        self._robots_loaded = asyncio.Event()
+        self._robots: _RobotInfo | None = None
+
+    def _create_client(self) -> httpx.AsyncClient:
+        return httpx.AsyncClient(
+            base_url=self._base_url,
+            headers={
+                "User-Agent": self._user_agent,
+            },
+        )
+
+    async def _get_robots(self) -> _RobotInfo | None:
+        if self._robots_loaded.is_set():
+            return self._robots
+
+        async with self._robots_lock:
+            try:
+                robots = await self._load_robots()
+                self._robots = robots
+                return robots
+            finally:
+                self._robots_loaded.set()
 
     async def get_wiki_stations(self) -> list[Station] | None:
         """
@@ -185,15 +230,23 @@ class WikipediaClient:
         Returns:
             List of Station objects or None if the request failed.
         """
-        url = "https://de.wikipedia.org/wiki/Liste_der_Personenbahnh%C3%B6fe_in_Schleswig-Holstein"
+        robots = await self._get_robots()
 
-        async with httpx.AsyncClient() as client:
+        if robots is None:
+            _logger.warning("No robots info, so not requesting page")
+            return None
+
+        url_path = "/wiki/Liste_der_Personenbahnh%C3%B6fe_in_Schleswig-Holstein"
+        if not robots.can_request(url_path):
+            _logger.error("Not allowed to request page")
+            return None
+
+        async with self._create_client() as client:
             try:
                 response = await client.get(
-                    url,
+                    url_path,
                     headers={
                         "Accept": "text/html",
-                        "User-Agent": self._user_agent,
                     },
                 )
             except httpx.RequestError:
@@ -210,3 +263,30 @@ class WikipediaClient:
 
             parser = _StationParser(response.url)
             return parser.parse_stations(response.text)
+
+    async def _load_robots(self) -> _RobotInfo | None:
+        async with self._create_client() as client:
+            try:
+                response = await client.get("/robots.txt")
+            except httpx.RequestError as e:
+                _logger.error("Could not fetch robots.txt", exc_info=e)
+                return None
+
+            if not response.is_success:
+                _logger.error(
+                    "Unsuccessful robots.txt repsonse %d", response.status_code
+                )
+                return None
+
+            parser = RobotFileParser()
+            try:
+                parser.parse(response.iter_lines())
+            except ValueError as e:
+                _logger.error("Could not parse robots.txt", exc_info=e)
+                return None
+
+            return _RobotInfo(
+                base_url=self._base_url,
+                parser=parser,
+                user_agent=self._user_agent,
+            )

@@ -10,12 +10,12 @@ from bot.wiki import WikipediaClient
 # This file was written by an AI, I just thinned out the most insane parts a bit lol.
 
 
-@pytest.fixture
-def client(config) -> WikipediaClient:
-    return WikipediaClient(config.user_agent)
-
-
+@pytest.mark.asyncio(loop_scope="class")
 class TestGetStations:
+    @pytest.fixture(scope="class")
+    def client(self, config) -> WikipediaClient:
+        return WikipediaClient(config.user_agent)
+
     @pytest.mark.integration
     @pytest.mark.asyncio
     async def test_get_stations_success(self, client):
