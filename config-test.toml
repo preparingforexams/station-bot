@@ -1,0 +1,11 @@
+telegram-token = "placeholder"
+
+[nats]
+consumer-name = "placeholder"
+receiver-secret = "placeholder"
+receiver-url = "placeholder"
+server-url = "placeholder"
+stream-name = "placeholder"
+
+[user-agent]
+client-name = "station-bot-test"

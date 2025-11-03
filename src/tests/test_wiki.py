@@ -5,17 +5,22 @@ from bot.model import (
     StationType,
     StopType,
 )
-from bot.wiki import get_wiki_stations
+from bot.wiki import WikipediaClient
 
 # This file was written by an AI, I just thinned out the most insane parts a bit lol.
+
+
+@pytest.fixture
+def client(config) -> WikipediaClient:
+    return WikipediaClient(config.user_agent)
 
 
 class TestGetStations:
     @pytest.mark.integration
     @pytest.mark.asyncio
-    async def test_get_stations_success(self):
+    async def test_get_stations_success(self, client):
         """Test the actual HTTP request to Wikipedia."""
-        stations = await get_wiki_stations()
+        stations = await client.get_wiki_stations()
 
         # Basic checks to ensure we got valid data
         assert stations is not None
@@ -34,9 +39,9 @@ class TestGetStations:
 
     @pytest.mark.integration
     @pytest.mark.asyncio
-    async def test_get_stations_integration(self):
+    async def test_get_stations_integration(self, client):
         """Integration test that verifies the structure of returned data."""
-        stations = await get_wiki_stations()
+        stations = await client.get_wiki_stations()
 
         assert stations is not None
         assert len(stations) > 100  # Schleswig-Holstein should have many stations
@@ -59,9 +64,9 @@ class TestGetStations:
 
     @pytest.mark.integration
     @pytest.mark.asyncio
-    async def test_get_stations_data_format(self):
+    async def test_get_stations_data_format(self, client):
         """Test that get_stations returns properly formatted Station objects."""
-        stations = await get_wiki_stations()
+        stations = await client.get_wiki_stations()
 
         if stations is None:
             pytest.skip("Network request failed, skipping data format test")

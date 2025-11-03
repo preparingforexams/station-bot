@@ -20,11 +20,11 @@ from telegram.ext import (
     filters,
 )
 
-from bot import wiki
 from bot.config import Config
 from bot.imported_stations import IMPORTED_STATIONS
 from bot.model import Station
 from bot.state import StateStorageFactory, StationState
+from bot.wiki import WikipediaClient
 
 if TYPE_CHECKING:
     from bs_state import StateStorage
@@ -50,16 +50,18 @@ class StationBot:
         self,
         *,
         state_storage_factory: StateStorageFactory,
+        wiki_client: WikipediaClient,
     ) -> None:
         self._state_storage_factory = state_storage_factory
         self._state_storage: StateStorage[StationState] = None  # type: ignore[assignment]
+        self._wiki_client = wiki_client
 
     async def __post_init(self, _) -> None:
         _logger.info("Initializing...")
         self._state_storage = await self._state_storage_factory(StationState.empty())
 
         _logger.info("Trying to update stations from Wikipedia")
-        stations = await wiki.get_wiki_stations()
+        stations = await self._wiki_client.get_wiki_stations()
         if stations is None:
             _logger.warning("Could not retrieve stations")
             return
@@ -84,6 +86,7 @@ class StationBot:
     def run(cls, config: Config, state_storage_factory: StateStorageFactory) -> None:
         bot = cls(
             state_storage_factory=state_storage_factory,
+            wiki_client=WikipediaClient(config.user_agent),
         )
 
         app = (

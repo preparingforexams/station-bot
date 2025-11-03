@@ -10,6 +10,7 @@ from pydantic import (
     HttpUrl,
 )
 
+from bot.config import UserAgentConfig
 from bot.model import Route, Station, StationType, StopType
 
 _logger = logging.getLogger(__name__)
@@ -173,28 +174,39 @@ class _StationParser:
         return "".join(strings)
 
 
-async def get_wiki_stations() -> list[Station] | None:
-    """
-    Asynchronously fetch and parse stations from Wikipedia.
+class WikipediaClient:
+    def __init__(self, config: UserAgentConfig) -> None:
+        self._user_agent = config.build_header_value()
 
-    Returns:
-        List of Station objects or None if the request failed.
-    """
-    url = "https://de.wikipedia.org/wiki/Liste_der_Personenbahnh%C3%B6fe_in_Schleswig-Holstein"
+    async def get_wiki_stations(self) -> list[Station] | None:
+        """
+        Asynchronously fetch and parse stations from Wikipedia.
 
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(url)
-        except httpx.RequestError:
-            _logger.exception("Could not fetch stations")
-            return None
+        Returns:
+            List of Station objects or None if the request failed.
+        """
+        url = "https://de.wikipedia.org/wiki/Liste_der_Personenbahnh%C3%B6fe_in_Schleswig-Holstein"
 
-        if not response.is_success:
-            _logger.error(
-                "Received unsuccessful response from Wikipedia: %d",
-                response.status_code,
-            )
-            return None
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(
+                    url,
+                    headers={
+                        "Accept": "text/html",
+                        "User-Agent": self._user_agent,
+                    },
+                )
+            except httpx.RequestError:
+                _logger.exception("Could not fetch stations")
+                return None
 
-        parser = _StationParser(response.url)
-        return parser.parse_stations(response.text)
+            if not response.is_success:
+                _logger.error(
+                    "Received unsuccessful response from Wikipedia: %d",
+                    response.status_code,
+                )
+                _logger.error(response.text)
+                return None
+
+            parser = _StationParser(response.url)
+            return parser.parse_stations(response.text)

@@ -1,5 +1,6 @@
 import logging
 from dataclasses import dataclass
+from functools import cache
 from typing import Self
 
 from bs_config import Env
@@ -34,12 +35,43 @@ class StateConfig:
 
 
 @dataclass(frozen=True, kw_only=True)
+class UserAgentConfig:
+    client_name: str
+    contact_email: str
+    project_url: str
+
+    @cache
+    def build_header_value(self) -> str:
+        from importlib.metadata import version
+
+        bot_version = version("bot")
+        httpx_version = version("httpx")
+
+        return f"{self.client_name}/{bot_version} ({self.project_url}; {self.contact_email}) httpx/{httpx_version}"
+
+    @classmethod
+    def from_env(cls, env: Env) -> Self:
+        return cls(
+            client_name=env.get_string("client-name", default="station-bot"),
+            contact_email=env.get_string(
+                "contact-email",
+                default="station-bot@bjoernpetersen.net",
+            ),
+            project_url=env.get_string(
+                "project-url",
+                default="https://github.com/preparingforexams/station-bot",
+            ),
+        )
+
+
+@dataclass(frozen=True, kw_only=True)
 class Config:
     app_version: str
     nats: NatsConfig
     sentry_dsn: str | None
     state: StateConfig | None
     telegram_token: str
+    user_agent: UserAgentConfig
 
     @classmethod
     def from_env(cls, env: Env) -> Self:
@@ -49,4 +81,5 @@ class Config:
             sentry_dsn=env.get_string("sentry-dsn"),
             state=StateConfig.from_env(env / "state"),
             telegram_token=env.get_string("telegram-token", required=True),
+            user_agent=UserAgentConfig.from_env(env / "user-agent"),
         )
