@@ -48,12 +48,13 @@ build-backend = "uv_build"
 module = "kubernetes.*"
 ignore_missing_imports = true
 
-[tool.pytest.ini_options]
-markers = [
-    "integration",
-]
+[tool.pytest]
+strict = true
 addopts = [
     "--import-mode=importlib",
+]
+markers = [
+    "integration",
 ]
 
 [tool.ruff.lint]
