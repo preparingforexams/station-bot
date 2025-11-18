@@ -19,7 +19,7 @@ RUN groupadd --system --gid 1000 app \
 USER 1000
 WORKDIR /app
 
-COPY [ "uv.lock", "pyproject.toml", "./" ]
+COPY [ "LICENSE", "uv.lock", "pyproject.toml", "./" ]
 
 RUN uv sync --locked --no-install-workspace --all-extras --no-dev
 
