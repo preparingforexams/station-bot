@@ -17,7 +17,7 @@ dependencies = [
     "httpx ==0.28.*",
     "python-telegram-bot ==22.5",
     "rapidfuzz>=3.13.0",
-    "sentry-sdk ==2.48.*",
+    "sentry-sdk ==2.49.*",
     "uvloop ==0.22.*",
 ]
 
